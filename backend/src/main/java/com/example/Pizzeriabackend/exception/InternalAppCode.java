@@ -1,0 +1,11 @@
+package com.example.Pizzeriabackend.exception;
+
+public enum InternalAppCode {
+    BAD_ACCESS_TOKEN,
+    ACCESS_TOKEN_EXPIRED,
+    BAD_REFRESH_TOKEN,
+    REFRESH_TOKEN_EXPIRED,
+    NO_USER_PERMS,
+    NO_ADMIN_PERMS,
+    BAD_CREDENTIALS,
+}
