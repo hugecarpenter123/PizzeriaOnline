@@ -1,0 +1,88 @@
+import React, { lazy, useContext, useEffect, useState } from "react";
+import { View, TouchableOpacity, StyleSheet, Text } from 'react-native'
+import { CommonActions, NavigationProp, useNavigation } from "@react-navigation/native";
+import { AppContext } from "../contexts/AppContext";
+import { RootStackParamList } from "../screens/AppStacks";
+import ConfirmationPopup from "./ConfirmationPopup";
+import useDeleteAccount from "../hooks/useDeleteAccount";
+import LoadingIndicator from "./LoadingIndicator";
+
+const UserInfoBottom = () => {
+    const { logout } = useContext(AppContext);
+    const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+    const [showPopup, setShowPopup] = useState(false);
+    const {loading, deleteAccount} = useDeleteAccount();
+
+    // popup related -----------
+    const onDeleteAccPressed = () => {
+        setShowPopup(true);
+    }   
+
+    const handleYes = () => {
+        setShowPopup(false);
+        deleteAccount();
+    };
+
+    const handleNo = () => {
+        setShowPopup(false);
+    };
+    // END popup related -------
+
+    const onLogoutPressed = () => {
+        logout();
+        navigateToLoginPage();
+    }
+
+    const navigateToLoginPage = () => {
+        navigation.dispatch({
+            ...CommonActions.reset({
+                index: 0,
+                routes: [{ name: 'LoginScreen' }],
+            }),
+        });
+    }
+
+
+    return (
+        <View style={styles.container}>
+            <TouchableOpacity style={[styles.button, styles.delete]} onPress={onDeleteAccPressed}>
+                <Text style={styles.text}>Usuń konto</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.button, styles.logout]} onPress={onLogoutPressed}>
+                <Text style={styles.text}>Wyloguj</Text>
+            </TouchableOpacity>
+            <ConfirmationPopup
+                isVisible={showPopup}
+                message="Na pewno usunąć konto na zawsze?"
+                onYes={handleYes}
+                onNo={handleNo}
+            />
+            {loading && <LoadingIndicator />}
+        </View>
+    )
+}
+
+const styles = StyleSheet.create({
+    container: {
+        marginTop: 10,
+        alignItems: 'center',
+        gap: 10,
+    },
+    button: {
+        paddingHorizontal: 15,
+        paddingVertical: 10,
+        borderRadius: 5,
+    },
+    delete: {
+        backgroundColor: 'red',
+    },
+    logout: {
+        backgroundColor: '#c6cb25',
+    },
+    text: {
+        fontSize: 15,
+        fontWeight: 'bold',
+    }
+})
+
+export default UserInfoBottom;
