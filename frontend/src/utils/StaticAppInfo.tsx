@@ -1,3 +1,5 @@
+import { StyleSheet } from 'react-native'
+
 export const userDetailsParams = {
     name: 'name',
     surname: 'surname',
@@ -20,3 +22,18 @@ export enum InternalAppCode {
     NO_ADMIN_PERMS = 'NO_ADMIN_PERMS',
     BAD_CREDENTIALS = 'BAD_CREDENTIALS',
 }
+
+export const commonStyles = StyleSheet.create({
+    darkThemeText: {
+        color: 'white',
+    },
+    lightThemeText: {
+        color: 'black',
+    },
+    darkThemeHint: {
+        color: '#bdbdbd',
+    },
+    lightThemeHint: {
+        color: 'pink',
+    }
+})

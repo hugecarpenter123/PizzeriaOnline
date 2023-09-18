@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { View, SafeAreaView, StyleSheet, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, SafeAreaView, StyleSheet, Text, ScrollView, TouchableOpacity, useColorScheme } from 'react-native';
 import { RadioButton, TouchableRipple } from 'react-native-paper';
 import AddressForm, { AddressProps } from '../../components/AddressForm';
 import CartCompletionItems from '../../components/CartCompletionItems';
@@ -11,6 +11,7 @@ import ContactForm, { ContactProps } from '../../components/ContactForm';
 import useCreateOrder from '../../hooks/useCreateOrder';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import useExchangeTokens from '../../hooks/useExchangeTokens';
+import { commonStyles } from '../../utils/StaticAppInfo';
 
 export enum OrderType {
     DELIVERY,
@@ -44,6 +45,9 @@ const OrderCompletionScreen = ({ route, navigation }: Props) => {
     const [addressData, setAddressData] = useState<AddressProps>({} as AddressProps)
     const [contactData, setContactData] = useState<ContactProps>({} as ContactProps)
     const { exchangeTokens, loading: tokenLoading } = useExchangeTokens();
+
+    const colorScheme = useColorScheme();
+    const textColor = colorScheme === 'dark' ? commonStyles.darkThemeText : commonStyles.lightThemeText;
 
     const addressOptions = [
         { label: "Adres i dane kontaktowe konta", value: AddressOption.DEFAULT },
@@ -192,12 +196,9 @@ const OrderCompletionScreen = ({ route, navigation }: Props) => {
 
                 <View style={styles.contentContainer}>
                     <TouchableOpacity style={styles.orderButton} onPress={onOrderPressed}>
-                        <Text style={styles.buttonText}>Zamawiam</Text>
+                        <Text style={[styles.buttonText]}>Zamawiam</Text>
                     </TouchableOpacity>
                 </View>
-                <TouchableOpacity style={styles.contentContainer} onPress={onRefreshTokenPressed}>
-                    <Text>Refresh the token</Text>
-                </TouchableOpacity>
             </ScrollView>
             {loading && <LoadingIndicator />}
         </SafeAreaView>
@@ -207,21 +208,15 @@ const OrderCompletionScreen = ({ route, navigation }: Props) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        // backgroundColor: 'purple',
         padding: 20,
         paddingBottom: 0,
     },
     scroll: {
-        // backgroundColor: 'red'
-        // padding: 20,
     },
     orderItemsContainer: {
-        // height: 100,
-        // backgroundColor: 'green',
     },
     contentContainer: {
         marginVertical: 10,
-        // backgroundColor: 'gray',
     },
     radioButtonContainer: {
         flexDirection: "row",
@@ -230,9 +225,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 5,
     },
     selectedOutline: {
-        // borderBottomWidth: 1,
-        // borderColor: 'tomato',
-        // borderRadius: 15,
     },
     header: {
         fontSize: 20,
@@ -251,6 +243,7 @@ const styles = StyleSheet.create({
     buttonText: {
         fontSize: 16,
         fontWeight: 'bold',
+        color: '#F7F7F7',
     },
     defaultInfoContainer: {
         marginHorizontal: 40,

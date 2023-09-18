@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Pressable, Platform } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Pressable, Platform, useColorScheme } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import useUpdateUser from '../hooks/useUpdateUser';
-import { UserDetails } from '../contexts/AppContext';
+import useUpdateUser, { UserModel } from '../hooks/useUpdateUser';
+import { commonStyles } from '../utils/StaticAppInfo';
 
 type EditFieldProps = {
     field: string,
@@ -19,6 +18,9 @@ export default function DateEditField({ field, label, value, validation, setLoad
     const [error, setError] = useState<string | null>(null);
     const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
     const {loading, update} = useUpdateUser();
+
+    const colorScheme = useColorScheme();
+    const textColor = colorScheme === 'dark' ? commonStyles.darkThemeText : commonStyles.lightThemeText;
 
     // DATE PICKER RELATED --------------------------------------------------
     const toggleDatePicker = () => {
@@ -66,7 +68,7 @@ export default function DateEditField({ field, label, value, validation, setLoad
     // END DATE PICKER RELATED ----------------------
 
     const onEditClicked = () => {
-        update({dateOfBirth: fieldValue} as UserDetails)
+        update({dateOfBirth: fieldValue} as UserModel)
     }
 
 
@@ -80,6 +82,7 @@ export default function DateEditField({ field, label, value, validation, setLoad
                         style={[
                             styles.input,
                             error ? { borderColor: "red" } : null,
+                            textColor,
                         ]}
                         placeholder="Date of Birth"
                         onChangeText={(value) => setError(validation(value))}

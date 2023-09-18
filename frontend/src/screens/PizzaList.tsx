@@ -15,7 +15,6 @@ import { AppContext } from "../contexts/AppContext";
 type Props = NativeStackScreenProps<PizzaScreenParamList & RootStackParamList, "PizzaList">
 
 const PizzaList = ({ route, navigation }: Props) => {
-    // console.log("PizzaList render()");
     const { cart, addOrderItem, menu, error, setError, menuFetched } = useContext(MainScreenContext);
     const { fetchMenu } = useMenuFetcher();
 

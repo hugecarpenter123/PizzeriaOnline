@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useContext, useRef } from 'react'
 import { AppContext, UserDetails } from '../contexts/AppContext'
-import { View, StyleSheet, Text, TouchableOpacity, TextInput } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity, TextInput, useColorScheme } from 'react-native';
 import Validation from '../utils/validation';
-import useUpdateUser from '../hooks/useUpdateUser';
+import useUpdateUser, { UserModel } from '../hooks/useUpdateUser';
 import { useFocusEffect } from '@react-navigation/native';
+import { commonStyles } from '../utils/StaticAppInfo';
 
 type Props = {
     setLoading: (loading: boolean) => void,
@@ -24,6 +25,9 @@ export default function AddressEditFields({ setLoading }: Props) {
         "Ulica",
         "Numer domu",
     ]
+
+    const colorScheme = useColorScheme();
+    const textColor = colorScheme === 'dark' ? commonStyles.darkThemeText : commonStyles.lightThemeText;
 
     const cityInput = useRef<TextInput>(null);
     const cityCodeInput = useRef<TextInput>(null);
@@ -76,7 +80,7 @@ export default function AddressEditFields({ setLoading }: Props) {
             cityCode,
             street,
             houseNumber,
-        } as UserDetails)
+        } as UserModel)
     }
 
     return (
@@ -86,7 +90,7 @@ export default function AddressEditFields({ setLoading }: Props) {
                 <View style={styles.row}>
                     <Text style={styles.label}>{labels[0]}</Text>
                     <TextInput
-                        style={[styles.input]}
+                        style={[styles.input, textColor]}
                         defaultValue={city}
                         onChangeText={(value) => onChange(fields[0], value)}
                         ref={cityInput}
@@ -98,7 +102,7 @@ export default function AddressEditFields({ setLoading }: Props) {
                 <View style={styles.row}>
                     <Text style={styles.label}>{labels[1]}</Text>
                     <TextInput
-                        style={[styles.input]}
+                        style={[styles.input, textColor]}
                         defaultValue={cityCode}
                         onChangeText={(value) => onChange(fields[1], value)}
                         ref={cityCodeInput}
@@ -110,7 +114,7 @@ export default function AddressEditFields({ setLoading }: Props) {
                 <View style={styles.row}>
                     <Text style={styles.label}>{labels[2]}</Text>
                     <TextInput
-                        style={[styles.input]}
+                        style={[styles.input, textColor]}
                         defaultValue={street}
                         onChangeText={(value) => onChange(fields[2], value)}
                         ref={streetInput}
@@ -122,7 +126,7 @@ export default function AddressEditFields({ setLoading }: Props) {
                 <View style={styles.row}>
                     <Text style={styles.label}>{labels[3]}</Text>
                     <TextInput
-                        style={[styles.input]}
+                        style={[styles.input, textColor]}
                         defaultValue={houseNumber}
                         onChangeText={(value) => onChange(fields[3], value)}
                         ref={houseNumberInput}

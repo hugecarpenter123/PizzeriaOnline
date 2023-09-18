@@ -9,6 +9,7 @@ import AccountEditFields from '../components/AccountEditFields';
 import UserProfilePicture from '../components/UserProfilePicture';
 import DateEditField from '../components/DateEditField';
 import UserInfoBottom from '../components/UserInfoBottom';
+import LoadingIndicator from '../components/LoadingIndicator';
 
 type Fields = {
     [key: string]: string | null,
@@ -92,6 +93,7 @@ export default function UserInfoScreen() {
                 <Separator />
                 <UserInfoBottom />
             </ScrollView>
+            {loading && <LoadingIndicator />}
         </SafeAreaView>
     );
 }

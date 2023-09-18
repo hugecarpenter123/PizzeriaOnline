@@ -1,12 +1,10 @@
 import React, { useState } from "react";
-import { Text, View, StyleSheet, TouchableOpacity, TouchableHighlight, TouchableNativeFeedback } from "react-native";
+import { Text, View, StyleSheet, TouchableOpacity, TouchableNativeFeedback, useColorScheme } from "react-native";
 import { Pizza } from "../contexts/MainScreenContext";
-import { NativeStackNavigationProp, NativeStackScreenProps } from "@react-navigation/native-stack";
-import { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
-import { TabParamList } from "../screens/MainScreen";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../screens/AppStacks";
-import { NativeSafeAreaProviderProps } from "react-native-safe-area-context";
 import { PizzaScreenParamList } from "../screens/PizzaScreen";
+import { commonStyles } from "../utils/StaticAppInfo";
 
 type Props = {
   pizza: Pizza,
@@ -28,6 +26,9 @@ function PizzaItem({ pizza, addToCart, navigation }: Props) {
 
   const pizzaPrices = [pizza.smallSizePrice, pizza.mediumSizePrice, pizza.bigSizePrice]
   const pizzaSizes = ["Mała", "Średnia", "Duża"]
+
+  // const colorScheme = useColorScheme();
+  // const captionColor = colorScheme === 'dark' ? commonStyles.darkThemeHint : commonStyles.lightThemeHint;
 
   return (
     <TouchableNativeFeedback onPress={() => onPizzaDetailsPress(pizza.id)}>
@@ -57,7 +58,7 @@ function PizzaItem({ pizza, addToCart, navigation }: Props) {
             style={styles.addButton}
             onPress={() => addToCart(pizza.id, selectedPriceIndex)}
           >
-            <Text style={styles.addButtonText}>Add to Order</Text>
+            <Text style={styles.addButtonText}>Dodaj</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -126,7 +127,6 @@ const styles = StyleSheet.create({
     marginRight: 8
   },
   priceCaption: {
-    color: '#bdbdbd',
     marginBottom: 4,
     fontSize: 13
   },

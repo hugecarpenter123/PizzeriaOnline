@@ -1,10 +1,8 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { SafeAreaView, Text, StyleSheet, View, TextInput, TouchableOpacity } from 'react-native';
-import { AppContext, UserDetails } from '../contexts/AppContext';
-import EditField from '../components/EditField';
+import React, { useState, useEffect } from 'react';
+import { SafeAreaView, Text, StyleSheet, View, TextInput, TouchableOpacity, useColorScheme } from 'react-native';
 import Validation from '../utils/validation';
-import AddressEditFields from '../components/AddressEditFields';
 import useUpdateUser, { UserModel } from '../hooks/useUpdateUser';
+import { commonStyles } from '../utils/StaticAppInfo';
 
 
 type Props = {
@@ -19,8 +17,11 @@ export default function AccountEditFields({ setLoading }: Props) {
     const [oldPasswordError, setOldPasswordError] = useState<string>('');
     const [passwordError, setPasswordError] = useState<string | null>(null);
     const [passwordError2, setPasswordError2] = useState<string | null>(null);
-
+    
     const { update, loading } = useUpdateUser();
+
+    const colorScheme = useColorScheme();
+    const textColor = colorScheme === 'dark' ? commonStyles.darkThemeText : commonStyles.lightThemeText;
 
     useEffect(() => {
         if (password2 && !passwordError2) {
@@ -79,7 +80,7 @@ export default function AccountEditFields({ setLoading }: Props) {
                 <View style={styles.row}>
                     <Text style={styles.label}>{labels[0]}</Text>
                     <TextInput
-                        style={[styles.input]}
+                        style={[styles.input, textColor]}
                         onChangeText={(value) => onChange(fields[0], value)}
                         secureTextEntry
                     />
@@ -90,7 +91,7 @@ export default function AccountEditFields({ setLoading }: Props) {
                 <View style={styles.row}>
                     <Text style={styles.label}>{labels[1]}</Text>
                     <TextInput
-                        style={[styles.input]}
+                        style={[styles.input, textColor]}
                         onChangeText={(value) => onChange(fields[1], value)}
                         secureTextEntry
                     />
@@ -101,7 +102,7 @@ export default function AccountEditFields({ setLoading }: Props) {
                 <View style={styles.row}>
                     <Text style={styles.label}>{labels[2]}</Text>
                     <TextInput
-                        style={[styles.input]}
+                        style={[styles.input, textColor]}
                         onChangeText={(value) => onChange(fields[2], value)}
                         secureTextEntry
                     />

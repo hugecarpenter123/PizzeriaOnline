@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
 import useUpdateUser, { UserModel } from '../hooks/useUpdateUser';
+import { commonStyles } from '../utils/StaticAppInfo';
 
 type EditFieldProps = {
     field: string,
@@ -17,13 +17,16 @@ export default function EditField({ field, label, value, validation, setLoading 
     const [error, setError] = useState<string | null>(null);
     const { update, loading } = useUpdateUser();
 
+    const colorScheme = useColorScheme();
+    const textColor = colorScheme === 'dark' ? commonStyles.darkThemeText : commonStyles.lightThemeText;
+    
     useEffect(() => {
         setError(validation(fieldValue))
     }, [fieldValue])
 
     const handleEdit = () => {
         // for userDetails puprposes send request
-        update({[field]: fieldValue} as UserModel);
+        update({ [field]: fieldValue } as UserModel);
         setLoading(loading);
     }
 
@@ -33,7 +36,7 @@ export default function EditField({ field, label, value, validation, setLoading 
             <View style={styles.row}>
                 <Text style={styles.label}>{label}</Text>
                 <TextInput
-                    style={[styles.input]}
+                    style={[styles.input, textColor]}
                     value={fieldValue}
                     onChangeText={setFieldValue}
                 />
@@ -68,7 +71,7 @@ const styles = StyleSheet.create({
         borderColor: '#CCCCCC',
         borderRadius: 5,
         padding: 10,
-        marginLeft: 10
+        marginLeft: 10,
     },
     editButton: {
         paddingHorizontal: 20,

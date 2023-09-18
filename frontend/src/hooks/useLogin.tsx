@@ -41,9 +41,9 @@ const useLogin = (): LoginHookResult => {
                 body: payload,
             })
 
+            const containsJson = response?.headers?.get('Content-Type')?.includes('application/json');
             if (!response.ok) {
                 // status code: 4xx, check for messages, if no then display status code
-                const containsJson = response?.headers?.get('Content-Type')?.includes('application/json');
                 const body = containsJson ? await response.json() : null;
                 const errorMessage = containsJson ? body.message || body : response.status;
                 internalAppCodeRef.current = containsJson ? body.internalAppCode : null
@@ -51,7 +51,7 @@ const useLogin = (): LoginHookResult => {
             }
 
             // If response is empty
-            if (!response?.headers?.get('Content-Type')?.includes('application/json')) {
+            if (!containsJson) {
                 throw new Error("Server response doesn't contain required data");
             }
             // response contains JSON
@@ -72,7 +72,7 @@ const useLogin = (): LoginHookResult => {
                 }
             }
         } catch (error: any) {
-            console.log("catch block: " + error)
+            console.error("catch block: " + error)
 
             if (internalAppCodeRef.current) {
                 errorInterceptor(internalAppCodeRef.current, setError);

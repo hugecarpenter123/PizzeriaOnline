@@ -1,8 +1,5 @@
-import React, { lazy, useContext, useEffect, useState } from "react";
+import React, { useState } from "react";
 import { View, TouchableOpacity, StyleSheet, Text } from 'react-native'
-import { CommonActions, NavigationProp, useNavigation } from "@react-navigation/native";
-import { AppContext } from "../contexts/AppContext";
-import { RootStackParamList } from "../screens/AppStacks";
 import ConfirmationPopup from "./ConfirmationPopup";
 import useDeleteAccount from "../hooks/useDeleteAccount";
 import LoadingIndicator from "./LoadingIndicator";
@@ -70,6 +67,7 @@ const styles = StyleSheet.create({
     text: {
         fontSize: 15,
         fontWeight: 'bold',
+        color: '#F7F7F7',
     }
 })
 

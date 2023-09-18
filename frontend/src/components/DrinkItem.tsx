@@ -61,7 +61,7 @@ const DrinkItem = ({ drink }: Props) => {
         </View>
       </View>
       <TouchableOpacity style={styles.addButton} onPress={() => onAddToOrderClick(drink.id, selected)}>
-        <Text style={styles.addButtonText}>Add to Order</Text>
+        <Text style={styles.addButtonText}>Dodaj</Text>
       </TouchableOpacity>
     </View>
   );
@@ -122,14 +122,13 @@ const styles = StyleSheet.create({
     flexDirection: 'column'
   },
   drinkSizeSelected: {
-    backgroundColor: 'pink',
+    backgroundColor: 'tomato',
   },
   singleSizeWrapper: {
     alignItems: 'center',
     marginRight: 8
   },
   priceCaption: {
-    color: '#bdbdbd',
     marginBottom: 4,
     fontSize: 13
   }

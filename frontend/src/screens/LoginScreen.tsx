@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from "react";
-import { Image, View, Text, StyleSheet, TouchableOpacity, TextInput } from "react-native";
+import React, { useState, useEffect, useContext } from "react";
+import { Image, View, Text, StyleSheet, TouchableOpacity, TextInput, useColorScheme } from "react-native";
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from "./AppStacks";
 import useLogin from "../hooks/useLogin";
 import LoadingIndicator from "../components/LoadingIndicator";
 import showToast from "../utils/showToast";
 import { Entypo } from '@expo/vector-icons';
-import { useColorScheme } from 'react-native-appearance';
+import { commonStyles } from "../utils/StaticAppInfo";
 
 type Props = NativeStackScreenProps<RootStackParamList, 'LoginScreen'>;
 
@@ -16,6 +16,8 @@ export default function LoginScreen({ route, navigation }: Props) {
     const { loading, success, error, loginRequest } = useLogin();
     const [loginError, setLoginError] = useState<string>('');
     const [passwordError, setPasswordError] = useState<string>('');
+
+    // const colorScheme = useColorScheme();
 
     useEffect(() => {
         if (error) {
@@ -69,9 +71,6 @@ export default function LoginScreen({ route, navigation }: Props) {
         }
         loginRequest(loginData);
     }
-
-    const colorScheme = useColorScheme();
-
     return (
         <View style={styles.container}>
             <View style={styles.imageContainer}>
@@ -82,6 +81,7 @@ export default function LoginScreen({ route, navigation }: Props) {
                 style={[
                     styles.input,
                     loginError ? { borderColor: "red" } : null,
+                    // colorScheme === 'dark' ? commonStyles.darkThemeText : commonStyles.lightThemeText
                 ]}
                 onChangeText={setLogin}
                 placeholder="Login"
@@ -91,7 +91,7 @@ export default function LoginScreen({ route, navigation }: Props) {
                 style={[
                     styles.input,
                     passwordError ? { borderColor: "red" } : null,
-                    colorScheme === 'dark' ? styles.darkThemeText : styles.lightThemeText,
+                    // colorScheme === 'dark' ? commonStyles.darkThemeText : commonStyles.lightThemeText
                 ]}
                 onChangeText={setPassword}
                 placeholder="Password"
@@ -178,10 +178,4 @@ const styles = StyleSheet.create({
         marginBottom: 50,
         resizeMode: 'contain'
     },
-    darkThemeText: {
-        color: 'white',
-    },
-    lightThemeText: {
-        color: 'black',
-    }
 });

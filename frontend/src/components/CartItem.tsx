@@ -90,7 +90,6 @@ const styles = StyleSheet.create({
   },
   quantityButton: {
     fontSize: 18,
-    color: "white",
   },
   quantity: {
     fontSize: 16,
