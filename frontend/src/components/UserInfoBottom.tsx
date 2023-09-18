@@ -6,10 +6,9 @@ import { RootStackParamList } from "../screens/AppStacks";
 import ConfirmationPopup from "./ConfirmationPopup";
 import useDeleteAccount from "../hooks/useDeleteAccount";
 import LoadingIndicator from "./LoadingIndicator";
+import ForceLogout from "../utils/ForceLogout";
 
 const UserInfoBottom = () => {
-    const { logout } = useContext(AppContext);
-    const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const [showPopup, setShowPopup] = useState(false);
     const {loading, deleteAccount} = useDeleteAccount();
 
@@ -29,19 +28,8 @@ const UserInfoBottom = () => {
     // END popup related -------
 
     const onLogoutPressed = () => {
-        logout();
-        navigateToLoginPage();
+        ForceLogout();
     }
-
-    const navigateToLoginPage = () => {
-        navigation.dispatch({
-            ...CommonActions.reset({
-                index: 0,
-                routes: [{ name: 'LoginScreen' }],
-            }),
-        });
-    }
-
 
     return (
         <View style={styles.container}>

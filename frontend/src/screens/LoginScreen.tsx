@@ -1,17 +1,16 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import { Image, View, Text, StyleSheet, TouchableOpacity, TextInput } from "react-native";
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from "./AppStacks";
 import useLogin from "../hooks/useLogin";
 import LoadingIndicator from "../components/LoadingIndicator";
 import showToast from "../utils/showToast";
-import { AppContext } from "../contexts/AppContext";
 import { Entypo } from '@expo/vector-icons';
+import { useColorScheme } from 'react-native-appearance';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'LoginScreen'>;
 
 export default function LoginScreen({ route, navigation }: Props) {
-    const { token, userDetails } = useContext(AppContext);
     const [login, setLogin] = useState<string>('');
     const [password, setPassword] = useState<string>('')
     const { loading, success, error, loginRequest } = useLogin();
@@ -70,6 +69,9 @@ export default function LoginScreen({ route, navigation }: Props) {
         }
         loginRequest(loginData);
     }
+
+    const colorScheme = useColorScheme();
+
     return (
         <View style={styles.container}>
             <View style={styles.imageContainer}>
@@ -89,6 +91,7 @@ export default function LoginScreen({ route, navigation }: Props) {
                 style={[
                     styles.input,
                     passwordError ? { borderColor: "red" } : null,
+                    colorScheme === 'dark' ? styles.darkThemeText : styles.lightThemeText,
                 ]}
                 onChangeText={setPassword}
                 placeholder="Password"
@@ -119,18 +122,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         padding: 40,
     },
-    text: {
-        fontSize: 25,
-        color: 'black',
-        fontWeight: 'bold'
-    },
-    aBg: {
-        marginTop: 10
-    },
-    a: {
-        marginTop: 10,
-        color: 'blue'
-    },
     input: {
         width: '100%',
         borderWidth: 1,
@@ -138,7 +129,6 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         padding: 10,
         marginBottom: 10,
-        color: 'white'
     },
     errorText: {
         color: "red",
@@ -188,4 +178,10 @@ const styles = StyleSheet.create({
         marginBottom: 50,
         resizeMode: 'contain'
     },
+    darkThemeText: {
+        color: 'white',
+    },
+    lightThemeText: {
+        color: 'black',
+    }
 });
