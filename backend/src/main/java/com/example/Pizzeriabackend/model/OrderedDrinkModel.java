@@ -1,0 +1,13 @@
+package com.example.Pizzeriabackend.model;
+
+import com.example.Pizzeriabackend.entity.DrinkSizes;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+@Data
+@AllArgsConstructor
+public class OrderedDrinkModel {
+    private Long drinkId;
+    private int quantity;
+    private DrinkSizes size;
+}

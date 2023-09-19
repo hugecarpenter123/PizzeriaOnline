@@ -1,0 +1,21 @@
+server:
+  port: '8082'
+  address: 192.168.1.39
+
+image-upload-folder: '${user.home}/Desktop/spring/image-upload-folder'
+
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    username: 2023_kupiec_arkadiusz
+    url: 
+    password: ''
+  jpa:
+    properties:
+      hibernate:
+        format_sql: 'true'
+        default_schema: java_projekt
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: 'true'
