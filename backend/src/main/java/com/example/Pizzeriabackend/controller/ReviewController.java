@@ -1,11 +1,12 @@
 package com.example.Pizzeriabackend.controller;
 
-import com.example.Pizzeriabackend.model.DTO.ReviewDTO;
-import com.example.Pizzeriabackend.model.ReviewModel;
+import com.example.Pizzeriabackend.model.response.ReviewDTO;
+import com.example.Pizzeriabackend.model.request.ReviewRequest;
 import com.example.Pizzeriabackend.service.ReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -17,21 +18,15 @@ public class ReviewController {
     @Autowired
     private ReviewService reviewService;
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteReview(@PathVariable long id) {
         reviewService.deleteReview(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @DeleteMapping("-pizza/{id}")
-    public ResponseEntity<Void> deletePizzaReviews(@PathVariable("id") long pizzaId) {
-        reviewService.deleteAllPizzaReviews(pizzaId);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
-
-    @PostMapping("/create")
-    public ResponseEntity<Map<String, ReviewDTO>> createReview(@RequestBody ReviewModel reviewModel) {
-        ReviewDTO review = reviewService.createReview(reviewModel);
+    @PostMapping
+    public ResponseEntity<Map<String, ReviewDTO>> createReview(@RequestBody ReviewRequest reviewRequest) {
+        ReviewDTO review = reviewService.createReview(reviewRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("result", review));
     }
 
@@ -41,19 +36,26 @@ public class ReviewController {
      * is always going to be assigned to the same previous review's pizza.
      *
      * @param id path variable of the review id
-     * @param reviewModel convertible to Java object JSON request body
-     * @return Map of "result" String key and ReviewDto object
      */
     @PutMapping("/replace/{id}")
-    public ResponseEntity<Map<String, ReviewDTO>> replaceReview(@PathVariable("id") long id, @RequestBody ReviewModel reviewModel) {
+    public ResponseEntity<Map<String, ReviewDTO>> replaceReview(@PathVariable("id") long id, @RequestBody ReviewRequest reviewRequest) {
         return ResponseEntity.status(HttpStatus.CREATED).body(
-                Map.of("result", reviewService.replaceReview(id, reviewModel))
+                Map.of("result", reviewService.replaceReview(id, reviewRequest))
         );
     }
 
-    @DeleteMapping("/delete-all")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @DeleteMapping
     public ResponseEntity<Void> deleteAllReviews() {
         reviewService.deleteAllReviews();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @DeleteMapping("/pizza/{pizzaId}")
+    public ResponseEntity<Void> deletePizzaReviews(@PathVariable("pizzaId") long pizzaId) {
+        reviewService.deleteAllPizzaReviews(pizzaId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

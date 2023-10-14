@@ -1,13 +1,13 @@
 package com.example.Pizzeriabackend.service;
 
-import com.example.Pizzeriabackend.model.DTO.ReviewDTO;
-import com.example.Pizzeriabackend.model.ReviewModel;
+import com.example.Pizzeriabackend.model.response.ReviewDTO;
+import com.example.Pizzeriabackend.model.request.ReviewRequest;
 
 public interface ReviewService {
-    ReviewDTO createReview(ReviewModel reviewModel);
+    ReviewDTO createReview(ReviewRequest reviewRequest);
     void deleteReview(long id);
     void deleteAllPizzaReviews(long pizzaId);
-    ReviewDTO replaceReview(long id, ReviewModel reviewModel);
+    ReviewDTO replaceReview(long id, ReviewRequest reviewRequest);
 
     void deleteAllReviews();
 }
