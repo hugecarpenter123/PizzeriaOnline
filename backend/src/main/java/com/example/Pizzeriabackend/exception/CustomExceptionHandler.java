@@ -69,9 +69,11 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(AccessDeniedException.class)
     protected ResponseEntity<Object> handleAccessDeniedExceptionException(AccessDeniedException exception) {
         logger.error("AccessDeniedException");
+        logger.error(exception.toString());
         ApiExceptionDetails exceptionDetails = new ApiExceptionDetails(
-                exception.getMessage(),
-                HttpStatus.FORBIDDEN
+                "Requester doesn't have permission to access this endpoint",
+                HttpStatus.FORBIDDEN,
+                InternalAppCode.NO_PERMISSION
         );
         return new ResponseEntity<>(exceptionDetails, HttpStatus.FORBIDDEN);
     }

@@ -1,10 +1,9 @@
 package com.example.Pizzeriabackend.service;
 
 import com.example.Pizzeriabackend.entity.Ingredient;
-import com.example.Pizzeriabackend.model.IngredientModel;
+import com.example.Pizzeriabackend.model.request.CreateIngredientRequest;
 import com.example.Pizzeriabackend.repository.IngredientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.annotation.AccessType;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,7 +14,7 @@ public class IngredientServiceImp implements IngredientService {
     @Autowired
     private IngredientRepository ingredientRepository;
     @Override
-    public Ingredient createIngredient(IngredientModel ingredientModel) {
+    public Ingredient createIngredient(CreateIngredientRequest ingredientModel) {
         Ingredient ingredient = Ingredient.builder()
                 .name(ingredientModel.getName())
                 .price(ingredientModel.getPrice())
@@ -30,12 +29,12 @@ public class IngredientServiceImp implements IngredientService {
     }
 
     @Override
-    public Ingredient updateIngredient(long id, IngredientModel ingredientModel) {
+    public Ingredient updateIngredient(long id, CreateIngredientRequest ingredientModel) {
         Ingredient ingredient = ingredientRepository.findById(id).orElseThrow();
         if (ingredientModel.getName() != null &&!ingredientModel.getName().isEmpty()) {
             ingredient.setName(ingredientModel.getName());
         }
-        if (ingredientModel.getPrice() != 0.0) ingredient.setPrice(ingredientModel.getPrice());
+        if (ingredientModel.getPrice() > 0.0) ingredient.setPrice(ingredientModel.getPrice());
 
         return ingredientRepository.save(ingredient);
     }
@@ -43,5 +42,10 @@ public class IngredientServiceImp implements IngredientService {
     @Override
     public void deleteIngredient(long id) {
         ingredientRepository.deleteById(id);
+    }
+
+    @Override
+    public void deleteAllIngredients() {
+        ingredientRepository.deleteAll();
     }
 }

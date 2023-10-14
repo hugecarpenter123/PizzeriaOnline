@@ -109,7 +109,6 @@ public class JwtServiceImp implements JwtService {
     }
 
     public AuthenticationResponse refreshToken(RefreshTokenRequest requestModel) {
-        System.out.println("JwtService.refreshToken()------------");
         String token = requestModel.getToken();
         RefreshToken refreshToken = refreshTokenRepository.findByToken(token)
                 .orElseThrow(() -> new RefreshTokenException("Refresh token doesn't exist", InternalAppCode.BAD_REFRESH_TOKEN));
@@ -124,31 +123,4 @@ public class JwtServiceImp implements JwtService {
                 .refreshToken(refreshToken.getToken())
                 .build();
     }
-
-//    public AuthenticationResponse refreshToken(RefreshTokenRequest requestModel) {
-//        System.out.println("JwtService.refreshToken()------------");
-//
-//        try {
-//            String token = requestModel.getToken();
-//            // Add logging to print the received token
-//            System.out.println("Received Token: " + token);
-//
-//            RefreshToken refreshToken = refreshTokenRepository.findByToken(token)
-//                    .orElseThrow(() -> new AccessDeniedException("Refresh token doesn't exist"));
-//
-//            if (refreshToken.getExpirationDate().compareTo(Instant.now()) < 0) {
-//                refreshTokenRepository.delete(refreshToken);
-//                throw new AccessDeniedException("Refresh token has expired");
-//            }
-//
-//            return AuthenticationResponse.builder()
-//                    .token(this.generateToken(refreshToken.getUser()))
-//                    .refreshToken(refreshToken.getToken())
-//                    .build();
-//        } catch (Exception e) {
-//            System.err.println("Exception during refreshToken: " + e.getMessage());
-//            // Log any exceptions that occur during processing
-//            throw e; // Rethrow the exception for further investigation
-//        }
-//    }
 }

@@ -2,20 +2,18 @@ package com.example.Pizzeriabackend.service;
 
 import com.example.Pizzeriabackend.entity.Pizza;
 import com.example.Pizzeriabackend.entity.Review;
-import com.example.Pizzeriabackend.entity.Role;
 import com.example.Pizzeriabackend.entity.User;
 import com.example.Pizzeriabackend.exception.GeneralBadRequestException;
 import com.example.Pizzeriabackend.exception.GeneralNotFoundException;
 import com.example.Pizzeriabackend.exception.NoUserPermissionException;
-import com.example.Pizzeriabackend.model.DTO.ReviewDTO;
-import com.example.Pizzeriabackend.model.ReviewModel;
+import com.example.Pizzeriabackend.model.response.ReviewDTO;
+import com.example.Pizzeriabackend.model.request.ReviewRequest;
 import com.example.Pizzeriabackend.repository.PizzaRepository;
 import com.example.Pizzeriabackend.repository.ReviewRepository;
 import com.example.Pizzeriabackend.repository.UserRepository;
+import com.example.Pizzeriabackend.util.ServiceUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,48 +26,46 @@ public class ReviewServiceImp implements ReviewService {
     private UserRepository userRepository;
     @Autowired
     private ReviewRepository reviewRepository;
+    @Autowired
+    private ServiceUtils serviceUtils;
 
     @Override
-    public ReviewDTO createReview(ReviewModel reviewModel) {
-        // grab user from the authentication, check if has necessary auths
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        boolean hasUserAuthority = hasUserAuthority(authentication);
-
-        boolean isReviewModelOk = (hasUserAuthority && reviewModel.getPizzaId() > 0)
-                && ((reviewModel.getStars() >= 0 && reviewModel.getStars() <= 5) ||
-                (reviewModel.getContent() != null && !reviewModel.getContent().isEmpty()));
+    public ReviewDTO createReview(ReviewRequest reviewRequest) {
+        boolean isReviewModelOk = (reviewRequest.getPizzaId() > 0)
+                && ((reviewRequest.getStars() >= 0 && reviewRequest.getStars() <= 5) ||
+                (reviewRequest.getContent() != null && !reviewRequest.getContent().isEmpty()));
 
         if (!isReviewModelOk) throw new GeneralBadRequestException("Review model filled improperly");
-        Pizza pizza =  pizzaRepository.findById(reviewModel.getPizzaId()).orElseThrow(() ->
+        Pizza pizza =  pizzaRepository.findById(reviewRequest.getPizzaId()).orElseThrow(() ->
                 new GeneralNotFoundException("Pizza not found"));
 
-        String email = authentication.getName();
+        String email = serviceUtils.getLoggedUser().getName();
         User user = userRepository.findByEmail(email);
 
         Review review = Review.builder()
                 .pizza(pizza)
                 .user(user)
-                .stars(reviewModel.getStars())
-                .content(reviewModel.getContent())
+                .stars(reviewRequest.getStars())
+                .content(reviewRequest.getContent())
                 .build();
 
-        review = reviewRepository.save(review);
+        reviewRepository.save(review);
         return new ReviewDTO(review, user);
     }
 
     @Override
     public void deleteReview(long id) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (hasAdminAuthority(authentication)) {
+        if (serviceUtils.hasAdminPerms()) {
             reviewRepository.deleteById(id);
         }
-        else if (hasUserAuthority(authentication)) {
+        else if (serviceUtils.hasUserPerms()) {
             Review review = reviewRepository.findById(id).orElseThrow(() -> new GeneralNotFoundException("Review not found"));
             User reviewUser = review.getUser();
-            User requestUser = (User) authentication.getPrincipal();
+            User requestUser = serviceUtils.getLoggedUser();
             if (!requestUser.getId().equals(reviewUser.getId())) {
-                throw new NoUserPermissionException("Requester is not authorised to perform operation on the given resource");
+                throw new AccessDeniedException("User is not authorized to perform action on this resource");
             }
+            reviewRepository.deleteById(id);
         }
     }
 
@@ -82,11 +78,9 @@ public class ReviewServiceImp implements ReviewService {
     }
 
     @Override
-    public ReviewDTO replaceReview(long id, ReviewModel reviewModel) {
-        User user = getLoggedUser();
+    public ReviewDTO replaceReview(long id, ReviewRequest reviewRequest) {
+        User user = serviceUtils.getLoggedUser();
         Review review = reviewRepository.findById(id).orElseThrow(() -> new GeneralNotFoundException("Review not found"));
-
-        // this check is necessary because it's not enough to have USER perms, given review must also belong to the same requester
         if (user != review.getUser()) {
             throw new NoUserPermissionException("Requester is not authorized to perform this operation");
         }
@@ -94,49 +88,18 @@ public class ReviewServiceImp implements ReviewService {
         reviewRepository.delete(review);
 
         Review newReview = Review.builder()
-                .content(reviewModel.getContent())
-                .stars(reviewModel.getStars())
+                .content(reviewRequest.getContent())
+                .stars(reviewRequest.getStars())
                 .pizza(pizza)
                 .user(user)
                 .build();
 
-        newReview = reviewRepository.save(newReview);
-        // TODO: 29.06.2023 probably unnecessary lines below
-//        pizza.getReviews().add(newReview);
-//        user.getReviews().add(newReview);
-
-        // not entirely necessary for the app
+        reviewRepository.save(newReview);
         return new ReviewDTO(newReview, user);
     }
 
     @Override
     public void deleteAllReviews() {
-        if(hasAdminAuthority(SecurityContextHolder.createEmptyContext().getAuthentication())) {
-            reviewRepository.deleteAll();
-        } else {
-            // TODO: 29.06.2023 maybe custom NoAdminPermissionException instead of this
-            throw new NoUserPermissionException("Access denied, admin authority required for this operation");
-        }
-    }
-
-    private User getLoggedUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        boolean hasUserAuthority = authentication.getAuthorities().stream()
-                .anyMatch(auth -> auth.getAuthority().equals(Role.USER.name()));
-        if (hasUserAuthority) {
-            return userRepository.findByEmail(authentication.getName());
-        } else {
-            throw new NoUserPermissionException("Request denied due to no USER permissions");
-        }
-    }
-
-    private boolean hasUserAuthority(Authentication authentication) {
-        return authentication.getAuthorities().stream()
-                .anyMatch(auth -> auth.getAuthority().equals(Role.USER.name()));
-    }
-
-    private boolean hasAdminAuthority(Authentication authentication) {
-        return authentication.getAuthorities().stream()
-                .anyMatch(auth -> auth.getAuthority().equals(Role.ADMIN.name()));
+        reviewRepository.deleteAll();
     }
 }

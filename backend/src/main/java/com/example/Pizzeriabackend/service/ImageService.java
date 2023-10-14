@@ -2,7 +2,7 @@ package com.example.Pizzeriabackend.service;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
-import static com.example.Pizzeriabackend.util.ServiceUtils.IMAGE_FOLDER;
+import static com.example.Pizzeriabackend.util.StaticAppInfo.IMAGE_FOLDER;
 
 public interface ImageService {
     MediaType resolveMediaType(String imageName);

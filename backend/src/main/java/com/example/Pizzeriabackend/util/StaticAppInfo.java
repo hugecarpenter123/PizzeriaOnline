@@ -10,6 +10,11 @@ public class StaticAppInfo {
         DRINK,
         USER,
     }
+    public enum IMAGE_FOLDER {
+        PIZZA,
+        DRINK,
+        USER
+    }
     @Value("${server.address}")
     private String serverAddress;
 

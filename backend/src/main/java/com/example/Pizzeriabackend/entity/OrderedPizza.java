@@ -1,5 +1,6 @@
 package com.example.Pizzeriabackend.entity;
 
+import com.example.Pizzeriabackend.entity.enums.PizzaSizes;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
