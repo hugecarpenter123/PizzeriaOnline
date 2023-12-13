@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Registration Confirmation</title>
+    <link href="http://192.168.1.39:8082/css/email.css" rel="stylesheet" type="text/css">
+</head>
+    <body>
+        <img src="https://img.freepik.com/premium-vector/pizza-delivery-man-cartoon-logo_12402-683.jpg?w=740" width="360"
+             height="360">
+        <h2>Registration</h2>
+        <div>
+            <p>Hello, <span th:text="${username}"></span></p>
+            <p>Thank you for registering with our application.</p>
+            <a href="">Click this link to confirm registration</a>
+            <p>Enjoy your pizza!</p>
+        </div>
+    </body>
+</html>

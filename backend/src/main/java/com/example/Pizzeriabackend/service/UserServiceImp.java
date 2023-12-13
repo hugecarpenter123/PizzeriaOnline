@@ -5,23 +5,26 @@ import com.example.Pizzeriabackend.config.JWT.model.AuthenticationRequest;
 import com.example.Pizzeriabackend.config.JWT.model.AuthenticationResponse;
 import com.example.Pizzeriabackend.entity.*;
 import com.example.Pizzeriabackend.entity.enums.Role;
+import com.example.Pizzeriabackend.event.registration.RegistrationEvent;
 import com.example.Pizzeriabackend.exception.DateParsingException;
 import com.example.Pizzeriabackend.exception.GeneralBadRequestException;
+import com.example.Pizzeriabackend.exception.GeneralNotFoundException;
 import com.example.Pizzeriabackend.model.response.OrderDTO;
 import com.example.Pizzeriabackend.model.response.UserDetailsDTO;
 import com.example.Pizzeriabackend.model.request.CreateSuperuserRequest;
 import com.example.Pizzeriabackend.model.request.UserDetailsRequest;
 import com.example.Pizzeriabackend.repository.PizzaRepository;
+import com.example.Pizzeriabackend.repository.RefreshTokenRepository;
 import com.example.Pizzeriabackend.repository.ReviewRepository;
 import com.example.Pizzeriabackend.repository.UserRepository;
 import com.example.Pizzeriabackend.util.ServiceUtils;
 import com.example.Pizzeriabackend.util.StaticAppInfo;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,7 +32,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Collection;
 import java.util.List;
 
 @Service
@@ -56,6 +58,10 @@ public class UserServiceImp implements UserService {
     private ImageService imageService;
     @Autowired
     private ServiceUtils serviceUtils;
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
+    @Autowired
+    private RefreshTokenRepository refreshTokenRepository;
 
     @Override
     public void registerUser(UserDetailsRequest userDetailsRequest) {
@@ -84,6 +90,7 @@ public class UserServiceImp implements UserService {
                 .imageUrl(staticAppInfo.getDefaultUserImgUrl()).build();
 
         userRepository.save(user);
+        eventPublisher.publishEvent(new RegistrationEvent(this, user.getEmail(), user.getUsername()));
     }
 
     /**
@@ -120,23 +127,23 @@ public class UserServiceImp implements UserService {
     }
 
     @Override
-    public UserDetailsDTO getDetails() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        // this authorities may be helpful in case of introducing ROLE_WORKER
-        Collection<? extends GrantedAuthority> authorities = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
-        User user = userRepository.findByEmail(email);
+    public UserDetailsDTO getMyDetails() {
+        User user = serviceUtils.getLoggedUser();
         return new UserDetailsDTO(user);
     }
 
     @Override
-    public List<OrderDTO> getUserOrders() {
-        return orderService.getMyOrders();
+    public List<OrderDTO> getUserOrders(Long id) {
+        return userRepository.findById(id).orElseThrow(() -> new GeneralNotFoundException("User not found"))
+                .getOrders().stream().map(OrderDTO::new).toList();
     }
 
     @Override
+    @Transactional
     public void deleteUser() {
         // it throws proper response error if user not found
         User user = serviceUtils.getLoggedUser();
+        refreshTokenRepository.deleteAllByUser(user);
         userRepository.delete(user);
     }
 
@@ -149,6 +156,7 @@ public class UserServiceImp implements UserService {
         String imageUrl = imageService.saveImage(image, StaticAppInfo.IMAGE_FOLDER.USER, imageName);
         user.setImageUrl(imageUrl);
         userRepository.save(user);
+
     }
 
     /**

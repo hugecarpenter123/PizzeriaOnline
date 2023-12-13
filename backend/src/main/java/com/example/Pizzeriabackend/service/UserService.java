@@ -14,8 +14,8 @@ public interface UserService {
     void registerUser(UserDetailsRequest userDetailsRequest);
     void createSuperUser(CreateSuperuserRequest createSuperuserRequest);
     AuthenticationResponse loginUser(AuthenticationRequest request);
-    UserDetailsDTO getDetails();
-    List<OrderDTO> getUserOrders();
+    UserDetailsDTO getMyDetails();
+    List<OrderDTO> getUserOrders(Long id);
     void deleteUser();
     void saveUserImage(MultipartFile image);
 

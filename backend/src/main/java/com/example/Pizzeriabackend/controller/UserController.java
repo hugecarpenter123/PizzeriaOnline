@@ -3,7 +3,10 @@ package com.example.Pizzeriabackend.controller;
 import com.example.Pizzeriabackend.config.JWT.model.AuthenticationRequest;
 import com.example.Pizzeriabackend.config.JWT.model.AuthenticationResponse;
 import com.example.Pizzeriabackend.config.JWT.model.RefreshTokenRequest;
+import com.example.Pizzeriabackend.config.JWT.model.RefreshTokenResponse;
 import com.example.Pizzeriabackend.config.JWT.service.JwtService;
+import com.example.Pizzeriabackend.event.registration.RegistrationEvent;
+import com.example.Pizzeriabackend.model.request.EmailRequest;
 import com.example.Pizzeriabackend.model.response.OrderDTO;
 import com.example.Pizzeriabackend.model.response.UserDetailsDTO;
 import com.example.Pizzeriabackend.model.request.CreateSuperuserRequest;
@@ -11,6 +14,7 @@ import com.example.Pizzeriabackend.model.request.UserDetailsRequest;
 import com.example.Pizzeriabackend.service.OrderService;
 import com.example.Pizzeriabackend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -31,9 +35,11 @@ public class UserController {
     @Autowired
     private JwtService jwtService;
 
-    @PostMapping("/getToken")
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
+
+    @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> getToken(@RequestBody AuthenticationRequest request) {
-        System.out.println("UserController.getToken()");
         return ResponseEntity.ok(userService.loginUser(request));
     }
 
@@ -45,7 +51,7 @@ public class UserController {
 
     @GetMapping("/details")
     public ResponseEntity<Map<String, UserDetailsDTO>> getUserDetails() {
-        UserDetailsDTO userDetails = userService.getDetails();
+        UserDetailsDTO userDetails = userService.getMyDetails();
         return ResponseEntity.ok(Map.of("result", userDetails));
     }
 
@@ -74,8 +80,8 @@ public class UserController {
     }
 
     @PostMapping("/refreshToken")
-    public ResponseEntity<AuthenticationResponse> refreshToken(RefreshTokenRequest request) {
-        AuthenticationResponse response = jwtService.refreshToken(request);
+    public ResponseEntity<RefreshTokenResponse> refreshToken(RefreshTokenRequest request) {
+        RefreshTokenResponse response = jwtService.refreshToken(request);
         return ResponseEntity.ok(response);
     }
 
@@ -84,6 +90,12 @@ public class UserController {
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Void> createSuperUser(CreateSuperuserRequest createSuperuserRequest) {
         userService.createSuperUser(createSuperuserRequest);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/send-email")
+    public ResponseEntity<Void> sendEmail(@RequestBody EmailRequest emailRequest) {
+        applicationEventPublisher.publishEvent(new RegistrationEvent(this, emailRequest.getTo(), emailRequest.getUsername()));
         return ResponseEntity.ok().build();
     }
 

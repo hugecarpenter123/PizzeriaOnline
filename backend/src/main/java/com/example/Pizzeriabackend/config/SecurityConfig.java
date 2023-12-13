@@ -18,19 +18,21 @@ import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
-    public static final String WHITE_LIST_REGEX = "/(api/(menu(/pizza(/\\d+)?|/drink(/\\d+)?)?|order/create|user/(register|getToken|refreshToken))|images/(pizza|drink|user)/.+)$";
+    public static final String WHITE_LIST_REGEX = "/(swagger.*)|/api/(menu|pizza(/\\d+)?|drink(/\\d+)?|order|user/(register|login|refreshToken|send-email))|/images/(pizza|drink|user)/.+|/css/.+$";
+    public static final String SWAGGER_REGEX = "/api/v1/auth/.*|/v2/api-docs|/v3/api-docs|/v3/api-docs/.*|/swagger-resources|/swagger-resources/.*|/configuration/ui|/configuration/security|/swagger-ui/.*|/webjars/.*|/swagger-ui.html";
 
     @Autowired
     private JwtAuthFilter jwtAuthFilter;
     @Autowired
     private AuthenticationProvider authenticationProvider;
 
-    @Bean
+    @Bean   
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable);
         http.cors(AbstractHttpConfigurer::disable);
         http.authorizeHttpRequests(request -> request
                 .requestMatchers(RegexRequestMatcher.regexMatcher(WHITE_LIST_REGEX)).permitAll()
+                .requestMatchers(RegexRequestMatcher.regexMatcher(SWAGGER_REGEX)).permitAll()
                 .anyRequest().authenticated());
 
         http.authenticationProvider(authenticationProvider);

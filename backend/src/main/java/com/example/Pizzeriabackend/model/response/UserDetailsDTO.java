@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 
 @Data
@@ -46,7 +47,7 @@ public class UserDetailsDTO {
     }
 
     private List<UserReviewDTO> getUserReviewDtoList(List<Review> reviews) {
-        return reviews.stream().map(UserReviewDTO::new).toList();
+        return reviews != null ? reviews.stream().map(UserReviewDTO::new).toList() : Collections.emptyList();
     }
 
     private List<OrderDTO> getOrderDtoList(List<Order> orders) {

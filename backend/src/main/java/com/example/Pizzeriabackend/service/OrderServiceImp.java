@@ -299,7 +299,7 @@ public class OrderServiceImp implements OrderService {
 
     @Override
     public void cancelOrder(long id) {
-        User user = getLoggedUser();
+        User user = serviceUtils.getLoggedUser();
         Order order = orderRepository.findById(id).orElseThrow(() -> new GeneralNotFoundException("Order not found"));
 
         // this check is necessary because it's not enough to have USER perms, given review must also belong to the same requester
@@ -314,16 +314,5 @@ public class OrderServiceImp implements OrderService {
     @Override
     public void deleteAllOrders() {
         orderRepository.deleteAll();
-    }
-
-    private User getLoggedUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        boolean hasUserAuthority = authentication.getAuthorities().stream()
-                .anyMatch(auth -> auth.getAuthority().equals(Role.USER.name()));
-        if (hasUserAuthority) {
-            return userRepository.findByEmail(authentication.getName());
-        } else {
-            throw new NoUserPermissionException("Request denied due to no USER permissions");
-        }
     }
 }

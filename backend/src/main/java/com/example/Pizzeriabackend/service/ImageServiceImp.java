@@ -35,6 +35,8 @@ public class ImageServiceImp implements ImageService {
 
         Path imagePath = Paths.get(dir, imageName);
         Resource imageResource = new FileSystemResource(imagePath);
+        System.out.println("imagePath: " + imagePath);
+        System.out.println("imageResource: " + imageResource);
         if (!imageResource.exists()) throw new GeneralNotFoundException("Image resource doesn't exist");
         return imageResource;
     }

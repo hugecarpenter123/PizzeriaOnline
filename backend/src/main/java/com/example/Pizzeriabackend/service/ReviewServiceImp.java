@@ -39,8 +39,7 @@ public class ReviewServiceImp implements ReviewService {
         Pizza pizza =  pizzaRepository.findById(reviewRequest.getPizzaId()).orElseThrow(() ->
                 new GeneralNotFoundException("Pizza not found"));
 
-        String email = serviceUtils.getLoggedUser().getName();
-        User user = userRepository.findByEmail(email);
+        User user = serviceUtils.getLoggedUser();
 
         Review review = Review.builder()
                 .pizza(pizza)

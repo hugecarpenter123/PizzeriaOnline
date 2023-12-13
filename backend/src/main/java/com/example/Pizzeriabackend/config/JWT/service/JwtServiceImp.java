@@ -2,6 +2,7 @@ package com.example.Pizzeriabackend.config.JWT.service;
 
 import com.example.Pizzeriabackend.config.JWT.model.AuthenticationResponse;
 import com.example.Pizzeriabackend.config.JWT.model.RefreshTokenRequest;
+import com.example.Pizzeriabackend.config.JWT.model.RefreshTokenResponse;
 import com.example.Pizzeriabackend.entity.RefreshToken;
 import com.example.Pizzeriabackend.entity.User;
 import com.example.Pizzeriabackend.exception.InternalAppCode;
@@ -108,7 +109,7 @@ public class JwtServiceImp implements JwtService {
         return refreshTokenRepository.save(refreshToken);
     }
 
-    public AuthenticationResponse refreshToken(RefreshTokenRequest requestModel) {
+    public RefreshTokenResponse refreshToken(RefreshTokenRequest requestModel) {
         String token = requestModel.getToken();
         RefreshToken refreshToken = refreshTokenRepository.findByToken(token)
                 .orElseThrow(() -> new RefreshTokenException("Refresh token doesn't exist", InternalAppCode.BAD_REFRESH_TOKEN));
@@ -118,7 +119,7 @@ public class JwtServiceImp implements JwtService {
             throw new RefreshTokenException("Refresh token has expired", InternalAppCode.REFRESH_TOKEN_EXPIRED);
         }
 
-        return AuthenticationResponse.builder()
+        return RefreshTokenResponse.builder()
                 .token(this.generateToken(refreshToken.getUser()))
                 .refreshToken(refreshToken.getToken())
                 .build();
