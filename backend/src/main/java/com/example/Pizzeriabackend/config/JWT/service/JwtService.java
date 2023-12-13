@@ -2,6 +2,7 @@ package com.example.Pizzeriabackend.config.JWT.service;
 
 import com.example.Pizzeriabackend.config.JWT.model.AuthenticationResponse;
 import com.example.Pizzeriabackend.config.JWT.model.RefreshTokenRequest;
+import com.example.Pizzeriabackend.config.JWT.model.RefreshTokenResponse;
 import com.example.Pizzeriabackend.entity.RefreshToken;
 import com.example.Pizzeriabackend.entity.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,5 +20,5 @@ public interface JwtService {
 
     RefreshToken generateRefreshToken(User user);
 
-    AuthenticationResponse refreshToken(RefreshTokenRequest requestModel);
+    RefreshTokenResponse refreshToken(RefreshTokenRequest requestModel);
 }

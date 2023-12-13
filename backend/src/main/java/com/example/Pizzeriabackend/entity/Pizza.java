@@ -1,12 +1,11 @@
 package com.example.Pizzeriabackend.entity;
 
-import com.example.Pizzeriabackend.util.StaticAppInfo;
+import com.example.Pizzeriabackend.entity.enums.PizzaSizes;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
@@ -28,7 +27,7 @@ public class Pizza {
     @ManyToMany
     private List<Ingredient> ingredients;
 
-    @OneToMany(mappedBy = "pizza", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "pizza", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Review> reviews;
     private String imageUrl;
 

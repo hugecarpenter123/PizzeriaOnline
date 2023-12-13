@@ -1,0 +1,11 @@
+spring:
+  jpa:
+    database: h2
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        default_schema: java_projekt
+        connection:
+          url: jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;INIT=CREATE SCHEMA IF NOT EXISTS java_projekt

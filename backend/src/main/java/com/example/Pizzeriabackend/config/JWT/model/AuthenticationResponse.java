@@ -1,6 +1,6 @@
 package com.example.Pizzeriabackend.config.JWT.model;
 
-import com.example.Pizzeriabackend.model.DTO.UserDetailsDTO;
+import com.example.Pizzeriabackend.model.response.UserDetailsDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

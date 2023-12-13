@@ -13,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.print.attribute.standard.Media;
 
-import static com.example.Pizzeriabackend.util.ServiceUtils.IMAGE_FOLDER;
+import static com.example.Pizzeriabackend.util.StaticAppInfo.IMAGE_FOLDER;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -35,6 +35,8 @@ public class ImageServiceImp implements ImageService {
 
         Path imagePath = Paths.get(dir, imageName);
         Resource imageResource = new FileSystemResource(imagePath);
+        System.out.println("imagePath: " + imagePath);
+        System.out.println("imageResource: " + imageResource);
         if (!imageResource.exists()) throw new GeneralNotFoundException("Image resource doesn't exist");
         return imageResource;
     }

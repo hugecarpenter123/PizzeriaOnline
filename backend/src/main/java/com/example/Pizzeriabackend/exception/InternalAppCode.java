@@ -8,4 +8,8 @@ public enum InternalAppCode {
     NO_USER_PERMS,
     NO_ADMIN_PERMS,
     BAD_CREDENTIALS,
+    NO_PERMISSION,
+    USER_NOT_FOUND,
+    RESOURCE_NOT_FOUND,
+    IMPROPER_MODEL
 }

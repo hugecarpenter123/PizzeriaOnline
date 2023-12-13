@@ -1,17 +1,22 @@
 package com.example.Pizzeriabackend.service;
 
 import com.example.Pizzeriabackend.entity.*;
+import com.example.Pizzeriabackend.entity.enums.OrderStatus;
+import com.example.Pizzeriabackend.entity.enums.OrderType;
+import com.example.Pizzeriabackend.entity.enums.Role;
 import com.example.Pizzeriabackend.exception.GeneralBadRequestException;
 import com.example.Pizzeriabackend.exception.GeneralNotFoundException;
+import com.example.Pizzeriabackend.exception.InternalAppCode;
 import com.example.Pizzeriabackend.exception.NoUserPermissionException;
-import com.example.Pizzeriabackend.model.DTO.OrderDTO;
-import com.example.Pizzeriabackend.model.DTO.OrderedDrinkDto;
-import com.example.Pizzeriabackend.model.DTO.OrderedPizzaDto;
-import com.example.Pizzeriabackend.model.OrderModel;
-import com.example.Pizzeriabackend.model.OrderedDrinkModel;
-import com.example.Pizzeriabackend.model.OrderedPizzaModel;
-import com.example.Pizzeriabackend.model.PizzaModel;
+import com.example.Pizzeriabackend.model.request.CreateOrderRequest;
+import com.example.Pizzeriabackend.model.request.OrderStatusRequest;
+import com.example.Pizzeriabackend.model.request.OrderedDrinkModel;
+import com.example.Pizzeriabackend.model.request.OrderedPizzaModel;
+import com.example.Pizzeriabackend.model.response.OrderDTO;
+import com.example.Pizzeriabackend.model.response.OrderedDrinkDto;
+import com.example.Pizzeriabackend.model.response.OrderedPizzaDto;
 import com.example.Pizzeriabackend.repository.*;
+import com.example.Pizzeriabackend.util.ServiceUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class OrderServiceImp implements OrderService {
@@ -41,25 +47,25 @@ public class OrderServiceImp implements OrderService {
     @Autowired
     private DrinkRepository drinkRepository;
 
+    @Autowired
+    private ServiceUtils serviceUtils;
+
+
     @Override
-    public OrderDTO createOrder(OrderModel orderModel) {
-        System.out.println("public OrderDTO createOrder() +++++++++++++++++++++++++++++++++");
-        // check whether this request is done from a logged user
+    public OrderDTO createOrder(CreateOrderRequest createOrderRequest) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
         boolean isLoggedIn = authentication.getAuthorities().stream().anyMatch(x -> x.getAuthority().equals(Role.USER.name()));
-        System.out.println("has USER auth: " + isLoggedIn);
-        System.out.println("OrderModel: " + orderModel);
 
-        boolean atLeastOneOrder = ((orderModel.getOrderedPizzas() != null && !orderModel.getOrderedPizzas().isEmpty())
-                || (orderModel.getOrderedDrinks() != null && !orderModel.getOrderedDrinks().isEmpty()));
-        boolean hasOrderType = orderModel.getOrderType() != null
-                && (orderModel.getOrderType().equals(OrderType.DELIVERY) || orderModel.getOrderType().equals(OrderType.PICKUP));
-        boolean containsAddress = orderModel.getDeliveryAddress() != null && !orderModel.getDeliveryAddress().isEmpty()
-                && orderModel.getOrdererName() != null && !orderModel.getOrdererName().isEmpty();
-        boolean isForDelivery = orderModel.getOrderType().equals(OrderType.DELIVERY);
-        boolean containsOrdererName = orderModel.getOrdererName() != null && !orderModel.getOrdererName().isEmpty();
-        boolean containsContact = orderModel.getPhone() != null && !orderModel.getPhone().isEmpty();
+        boolean atLeastOneOrder = ((createOrderRequest.getOrderedPizzas() != null && !createOrderRequest.getOrderedPizzas().isEmpty())
+                || (createOrderRequest.getOrderedDrinks() != null && !createOrderRequest.getOrderedDrinks().isEmpty()));
+        boolean hasOrderType = createOrderRequest.getOrderType() != null
+                && (createOrderRequest.getOrderType().equals(OrderType.DELIVERY) || createOrderRequest.getOrderType().equals(OrderType.PICKUP));
+        boolean containsAddress = createOrderRequest.getDeliveryAddress() != null && !createOrderRequest.getDeliveryAddress().isEmpty()
+                && createOrderRequest.getOrdererName() != null && !createOrderRequest.getOrdererName().isEmpty();
+        boolean isForDelivery = createOrderRequest.getOrderType().equals(OrderType.DELIVERY);
+        boolean containsOrdererName = createOrderRequest.getOrdererName() != null && !createOrderRequest.getOrdererName().isEmpty();
+        boolean containsContact = createOrderRequest.getPhone() != null && !createOrderRequest.getPhone().isEmpty();
 
         boolean hasDeliveryInfo = containsContact && containsOrdererName && containsAddress;
         boolean hasPickupInfo = containsContact && containsOrdererName;
@@ -75,40 +81,34 @@ public class OrderServiceImp implements OrderService {
         }
 
         // get list of orders and check validate them later
-        List<OrderedDrinkModel> orderedDrinkModels = orderModel.getOrderedDrinks();
-        List<OrderedPizzaModel> orderedPizzaModels = orderModel.getOrderedPizzas();
+        List<OrderedDrinkModel> orderedDrinkModels = createOrderRequest.getOrderedDrinks();
+        List<OrderedPizzaModel> orderedPizzaModels = createOrderRequest.getOrderedPizzas();
 
-        System.out.println("-----------------------Order completion---------------------------");
         Order order = new Order();
-        order.setOrderType(orderModel.getOrderType());
-        System.out.println("order.setOrderType(orderModel.getOrderType()) - done");
+        order.setOrderType(createOrderRequest.getOrderType());
         order.setStatus(OrderStatus.PENDING);
-        System.out.println("order.setStatus(OrderStatus.PENDING) - done");
+        order.setLookupId(UUID.randomUUID().toString());
         // if is logged in (present valid bearer token)
         if (isLoggedIn) {
-            System.out.println("userLoggedIn ifBlock=========");
             // if both won't print then the error is here
             User user = userRepository.findByEmail(email);
             order.setUser(user);
-            System.out.println("order.setUser(user) - done");
 
             // having user, set ordererName from that
             order.setOrdererName(user.getName() + " " + user.getSurname());
-            System.out.println("order.setOrdererName(user.getName() + \" \" + user.getSurname()) - done");
 
             // if contact changed for the order, set accordingly - else default
             if (containsContact) {
-                order.setPhone(orderModel.getPhone());
+                order.setPhone(createOrderRequest.getPhone());
             } else {
                 order.setPhone(user.getPhoneNumber());
             }
-            System.out.println("phone - done");
 
             // if order is for DELIVERY
-            if (orderModel.getOrderType().equals(OrderType.DELIVERY)) {
+            if (createOrderRequest.getOrderType().equals(OrderType.DELIVERY)) {
                 // if DELIVERY address is different from registration users address then set given
-                if (orderModel.getDeliveryAddress() != null && !orderModel.getDeliveryAddress().isEmpty()) {
-                    order.setDeliveryAddress(orderModel.getDeliveryAddress());
+                if (createOrderRequest.getDeliveryAddress() != null && !createOrderRequest.getDeliveryAddress().isEmpty()) {
+                    order.setDeliveryAddress(createOrderRequest.getDeliveryAddress());
                 } else {
                     // DELIVERY address is same as at the registration
                     // set default delivery address from registered user
@@ -122,11 +122,11 @@ public class OrderServiceImp implements OrderService {
             // order made without registration, fill provided necessary data
         } else {
             // user not logged in, save name and contact
-            order.setOrdererName(orderModel.getOrdererName());
-            order.setPhone(orderModel.getPhone());
+            order.setOrdererName(createOrderRequest.getOrdererName());
+            order.setPhone(createOrderRequest.getPhone());
             // if not-logged user has chosen DELIVERY, save address data
-            if (orderModel.getOrderType().equals(OrderType.DELIVERY)) {
-                order.setDeliveryAddress(orderModel.getDeliveryAddress());
+            if (createOrderRequest.getOrderType().equals(OrderType.DELIVERY)) {
+                order.setDeliveryAddress(createOrderRequest.getDeliveryAddress());
             }
         }
 
@@ -235,7 +235,7 @@ public class OrderServiceImp implements OrderService {
                 .toList();
 
         return OrderDTO.builder()
-                .order_id(order.getId())
+                .orderId(order.getId())
                 .ordererName(order.getOrdererName())
                 .orderedPizzas(orderedPizzaDtoList)
                 .orderedDrinks(orderedDrinkDtoList)
@@ -245,13 +245,51 @@ public class OrderServiceImp implements OrderService {
     }
 
     @Override
-    public Order getOrder(long id) {
-        return orderRepository.findById(id).orElseThrow(() -> new GeneralNotFoundException("Order not found"));
+    public OrderDTO getOrder(long id) {
+        Order order = orderRepository.findById(id).orElseThrow(() -> new GeneralNotFoundException("Order not found"));
+        return new OrderDTO(order);
     }
 
     @Override
-    public List<Order> getOrders() {
-        return orderRepository.findAll();
+    public List<OrderDTO> getMyOrders() {
+        User user = serviceUtils.getLoggedUser();
+        return user.getOrders().stream().map(OrderDTO::new).toList();
+    }
+
+    @Override
+    public List<OrderDTO> getAllOrders() {
+        return orderRepository.findAll().stream().map(OrderDTO::new).toList();
+    }
+
+    @Override
+    public List<OrderDTO> getUserOrders(long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new  GeneralNotFoundException("User with provided id doesn't exist", InternalAppCode.USER_NOT_FOUND));
+        return user.getOrders().stream().map(OrderDTO::new).toList();
+    }
+
+    /**
+     * Database operation is performed only if requester is: ADMIN | WORKER | owner of the Order resource.
+     */
+    @Override
+    public void updateOrderStatus(OrderStatusRequest orderStatusModel) {
+        if (!orderStatusModel.isValid()) {
+            throw new GeneralBadRequestException("Order status model is filled improperly", InternalAppCode.IMPROPER_MODEL);
+        }
+
+        Order order = orderRepository.findById(orderStatusModel.getOrderId())
+                .orElseThrow(() -> new GeneralNotFoundException("Order with provided id doesn't exist", InternalAppCode.RESOURCE_NOT_FOUND));
+
+        order.setStatus(orderStatusModel.getOrderStatus());
+        orderRepository.save(order);
+    }
+
+    @Override
+    public OrderDTO getOrderByLookupId(String lookupId) {
+        Order order = orderRepository.findByLookupId(lookupId).orElseThrow(
+                () -> new GeneralNotFoundException("Order of this lookup id doesn't exist", InternalAppCode.RESOURCE_NOT_FOUND)
+        );
+        return new OrderDTO(order);
     }
 
     @Override
@@ -261,7 +299,7 @@ public class OrderServiceImp implements OrderService {
 
     @Override
     public void cancelOrder(long id) {
-        User user = getLoggedUser();
+        User user = serviceUtils.getLoggedUser();
         Order order = orderRepository.findById(id).orElseThrow(() -> new GeneralNotFoundException("Order not found"));
 
         // this check is necessary because it's not enough to have USER perms, given review must also belong to the same requester
@@ -276,16 +314,5 @@ public class OrderServiceImp implements OrderService {
     @Override
     public void deleteAllOrders() {
         orderRepository.deleteAll();
-    }
-
-    private User getLoggedUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        boolean hasUserAuthority = authentication.getAuthorities().stream()
-                .anyMatch(auth -> auth.getAuthority().equals(Role.USER.name()));
-        if (hasUserAuthority) {
-            return userRepository.findByEmail(authentication.getName());
-        } else {
-            throw new NoUserPermissionException("Request denied due to no USER permissions");
-        }
     }
 }
