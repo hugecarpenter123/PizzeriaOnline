@@ -42,18 +42,12 @@ public class PizzaServiceImp implements PizzaService {
 
     @Override
     public Pizza getPizza(Long id) {
-//        return pizzaRepository.findById(id).orElseThrow();
         Optional<Pizza> pizza = pizzaRepository.findById(id);
         return pizza.orElse(null);
     }
 
     @Override
     public PizzaDTO createPizza(MultipartFile image, String jsonPizzaModel) {
-        if (serviceUtils.hasAdminPerms()) {
-            // TODO: 24.08.2023 uncomment those lines after finishing debug
-//            throw new NoUserPermissionException("Requester is not authorised to perform this task");
-        }
-
         try {
             CreatePizzaRequest createPizzaRequest = objectMapper.readValue(jsonPizzaModel, CreatePizzaRequest.class);
 

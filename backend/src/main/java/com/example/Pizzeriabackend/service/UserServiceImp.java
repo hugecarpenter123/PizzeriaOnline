@@ -65,12 +65,10 @@ public class UserServiceImp implements UserService {
 
     @Override
     public void registerUser(UserDetailsRequest userDetailsRequest) {
-        // check for existing email in the db
         if (userRepository.findByEmail(userDetailsRequest.getEmail()) != null) {
             throw new GeneralBadRequestException("User with given email already exists");
         }
 
-        // TODO: 24.06.2023 here should some validation happen
         if (!validate(userDetailsRequest)) {
             throw new GeneralBadRequestException("Improper registration data");
         }

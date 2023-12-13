@@ -76,7 +76,6 @@ public class OrderServiceImp implements OrderService {
                 && (isLoggedIn || ((isForDelivery && hasDeliveryInfo) || (!isForDelivery && hasPickupInfo)));
 
         if (!isOrderModelOk) {
-            // shouldn't happen in well performed UI
             throw new GeneralBadRequestException("Order information are filled improperly");
         }
 
@@ -88,13 +87,9 @@ public class OrderServiceImp implements OrderService {
         order.setOrderType(createOrderRequest.getOrderType());
         order.setStatus(OrderStatus.PENDING);
         order.setLookupId(UUID.randomUUID().toString());
-        // if is logged in (present valid bearer token)
         if (isLoggedIn) {
-            // if both won't print then the error is here
             User user = userRepository.findByEmail(email);
             order.setUser(user);
-
-            // having user, set ordererName from that
             order.setOrdererName(user.getName() + " " + user.getSurname());
 
             // if contact changed for the order, set accordingly - else default
@@ -104,14 +99,10 @@ public class OrderServiceImp implements OrderService {
                 order.setPhone(user.getPhoneNumber());
             }
 
-            // if order is for DELIVERY
             if (createOrderRequest.getOrderType().equals(OrderType.DELIVERY)) {
-                // if DELIVERY address is different from registration users address then set given
                 if (createOrderRequest.getDeliveryAddress() != null && !createOrderRequest.getDeliveryAddress().isEmpty()) {
                     order.setDeliveryAddress(createOrderRequest.getDeliveryAddress());
                 } else {
-                    // DELIVERY address is same as at the registration
-                    // set default delivery address from registered user
                     String deliveryAddress = String.format(
                             "%s %s, %s %s", user.getStreet(), user.getHouseNumber(), user.getCityCode(), user.getCity()
                     );
@@ -119,9 +110,7 @@ public class OrderServiceImp implements OrderService {
                 }
                 System.out.println("for delivery info - done");
             }
-            // order made without registration, fill provided necessary data
         } else {
-            // user not logged in, save name and contact
             order.setOrdererName(createOrderRequest.getOrdererName());
             order.setPhone(createOrderRequest.getPhone());
             // if not-logged user has chosen DELIVERY, save address data
@@ -130,12 +119,8 @@ public class OrderServiceImp implements OrderService {
             }
         }
 
-        // first save the order, then fill rest of the info 
         Order createdOrder = orderRepository.save(order);
-        // at this point, Order needs to have ordered elements attached
-        System.out.println("Order initially created: " + createdOrder);
 
-        // validate order lists
         if (!orderedPizzaModels.isEmpty()) {
             List<OrderedPizza> orderedPizzas = parseOrderedPizzaModel(orderedPizzaModels, createdOrder);
             createdOrder.setOrderedPizzas(orderedPizzas);
@@ -153,11 +138,7 @@ public class OrderServiceImp implements OrderService {
             createdOrder.setOrderedDrinks(new ArrayList<>());
         }
 
-        // no matter what was set (empty or full, always save)
         orderRepository.save(createdOrder);
-
-        // created constructor can receive Order object and return DTO obj
-        // return generateOrderResponseObject(createdOrder);
         return new OrderDTO(createdOrder);
     }
 
@@ -210,13 +191,11 @@ public class OrderServiceImp implements OrderService {
 
             orderedDrinks.add(orderedDrinkRepository.save(orderedDrink));
         }
-        System.out.println("--------------parseOrderedDrinkModel() - done");
         return orderedDrinks;
     }
 
     // TODO: 27.06.2023 remove, because same logic is implemented as DTO constructor
     public OrderDTO generateOrderResponseObject(Order order) {
-        // build list of OrderedPizzaDto which is a part of an Order model to be returned
         List<OrderedPizzaDto> orderedPizzaDtoList = order.getOrderedPizzas().stream().map(
                         orderedPizza -> OrderedPizzaDto.builder()
                                 .name(orderedPizza.getPizza().getName())
@@ -225,7 +204,6 @@ public class OrderServiceImp implements OrderService {
                                 .build())
                 .toList();
 
-        // build list of OrderedDrinkDto which is a part of an Order model to be returned
         List<OrderedDrinkDto> orderedDrinkDtoList = order.getOrderedDrinks().stream().map(
                         orderedDrink -> OrderedDrinkDto.builder()
                                 .name(orderedDrink.getDrink().getName())
@@ -302,7 +280,6 @@ public class OrderServiceImp implements OrderService {
         User user = serviceUtils.getLoggedUser();
         Order order = orderRepository.findById(id).orElseThrow(() -> new GeneralNotFoundException("Order not found"));
 
-        // this check is necessary because it's not enough to have USER perms, given review must also belong to the same requester
         if (user != order.getUser()) {
             throw new NoUserPermissionException("Requester is not authorized to perform this operation");
         }
