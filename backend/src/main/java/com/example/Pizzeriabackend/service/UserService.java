@@ -2,22 +2,22 @@ package com.example.Pizzeriabackend.service;
 
 import com.example.Pizzeriabackend.config.JWT.model.AuthenticationRequest;
 import com.example.Pizzeriabackend.config.JWT.model.AuthenticationResponse;
-import com.example.Pizzeriabackend.model.DTO.OrderDTO;
-import com.example.Pizzeriabackend.model.DTO.UserDetailsDTO;
-import com.example.Pizzeriabackend.model.UserModel;
-import org.springframework.security.core.Authentication;
+import com.example.Pizzeriabackend.model.response.OrderDTO;
+import com.example.Pizzeriabackend.model.response.UserDetailsDTO;
+import com.example.Pizzeriabackend.model.request.CreateSuperuserRequest;
+import com.example.Pizzeriabackend.model.request.UserDetailsRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 public interface UserService {
-    void registerUser(UserModel userModel);
-    void createSuperUser(UserModel userModel);
+    void registerUser(UserDetailsRequest userDetailsRequest);
+    void createSuperUser(CreateSuperuserRequest createSuperuserRequest);
     AuthenticationResponse loginUser(AuthenticationRequest request);
-    UserDetailsDTO getDetails(Authentication authentication);
-    List<OrderDTO> getUserOrders(Authentication authentication);
+    UserDetailsDTO getMyDetails();
+    List<OrderDTO> getUserOrders(Long id);
     void deleteUser();
     void saveUserImage(MultipartFile image);
 
-    UserDetailsDTO updateUser(UserModel userModel);
+    UserDetailsDTO updateUser(UserDetailsRequest userDetailsRequest);
 }

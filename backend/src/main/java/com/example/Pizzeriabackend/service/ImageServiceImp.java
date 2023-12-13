@@ -13,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.print.attribute.standard.Media;
 
-import static com.example.Pizzeriabackend.util.ServiceUtils.IMAGE_FOLDER;
+import static com.example.Pizzeriabackend.util.StaticAppInfo.IMAGE_FOLDER;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -35,13 +35,14 @@ public class ImageServiceImp implements ImageService {
 
         Path imagePath = Paths.get(dir, imageName);
         Resource imageResource = new FileSystemResource(imagePath);
+        System.out.println("imagePath: " + imagePath);
+        System.out.println("imageResource: " + imageResource);
         if (!imageResource.exists()) throw new GeneralNotFoundException("Image resource doesn't exist");
         return imageResource;
     }
 
     @Override
     public String saveImage(MultipartFile image, IMAGE_FOLDER imageFolder, String imageName) {
-        // Check if the image is empty
         if (image.isEmpty()) {
             throw new GeneralBadRequestException("Image can not be empty");
         }
@@ -52,7 +53,6 @@ public class ImageServiceImp implements ImageService {
             throw new GeneralBadRequestException("Invalid format of the image");
         }
 
-        // check if extension is present
         String originalFilename = image.getOriginalFilename();
         String fileNameExtension;
         if (originalFilename == null) {
@@ -64,7 +64,6 @@ public class ImageServiceImp implements ImageService {
             }
         }
 
-        // declare upload dir and file name
         String imageFileName = imageName.toLowerCase() + fileNameExtension;
         String uploadDirectory = switch (imageFolder) {
             case PIZZA -> staticAppInfo.getUploadPizzaImgDir();
@@ -72,7 +71,6 @@ public class ImageServiceImp implements ImageService {
             case USER -> staticAppInfo.getUploadUserImgDir();
         };
 
-        // Save the image to the static directory
         try {
             Path imagePath = Paths.get(uploadDirectory, imageFileName);
             System.out.println("resolved ImagePath is: " + imagePath);

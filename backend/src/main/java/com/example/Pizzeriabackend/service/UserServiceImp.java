@@ -4,24 +4,27 @@ import com.example.Pizzeriabackend.config.JWT.service.JwtService;
 import com.example.Pizzeriabackend.config.JWT.model.AuthenticationRequest;
 import com.example.Pizzeriabackend.config.JWT.model.AuthenticationResponse;
 import com.example.Pizzeriabackend.entity.*;
+import com.example.Pizzeriabackend.entity.enums.Role;
+import com.example.Pizzeriabackend.event.registration.RegistrationEvent;
 import com.example.Pizzeriabackend.exception.DateParsingException;
 import com.example.Pizzeriabackend.exception.GeneralBadRequestException;
-import com.example.Pizzeriabackend.exception.InternalAppCode;
-import com.example.Pizzeriabackend.model.DTO.OrderDTO;
-import com.example.Pizzeriabackend.model.DTO.UserDetailsDTO;
-import com.example.Pizzeriabackend.model.UserModel;
+import com.example.Pizzeriabackend.exception.GeneralNotFoundException;
+import com.example.Pizzeriabackend.model.response.OrderDTO;
+import com.example.Pizzeriabackend.model.response.UserDetailsDTO;
+import com.example.Pizzeriabackend.model.request.CreateSuperuserRequest;
+import com.example.Pizzeriabackend.model.request.UserDetailsRequest;
 import com.example.Pizzeriabackend.repository.PizzaRepository;
+import com.example.Pizzeriabackend.repository.RefreshTokenRepository;
 import com.example.Pizzeriabackend.repository.ReviewRepository;
 import com.example.Pizzeriabackend.repository.UserRepository;
 import com.example.Pizzeriabackend.util.ServiceUtils;
 import com.example.Pizzeriabackend.util.StaticAppInfo;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.AccessDeniedException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,7 +32,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Collection;
 import java.util.List;
 
 @Service
@@ -42,36 +44,51 @@ public class UserServiceImp implements UserService {
     private PizzaRepository pizzaRepository;
     @Autowired
     private ReviewRepository reviewRepository;
-
     @Autowired
     private AuthenticationManager authenticationManager;
-
+    @Autowired
+    private OrderService orderService;
     @Autowired
     private JwtService jwtService;
-
     @Autowired
     private PasswordEncoder passwordEncoder;
-
     @Autowired
     private StaticAppInfo staticAppInfo;
     @Autowired
     private ImageService imageService;
+    @Autowired
+    private ServiceUtils serviceUtils;
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
+    @Autowired
+    private RefreshTokenRepository refreshTokenRepository;
 
     @Override
-    public void registerUser(UserModel userModel) {
-        // check for existing email in the db
-        if (userRepository.findByEmail(userModel.getEmail()) != null) {
+    public void registerUser(UserDetailsRequest userDetailsRequest) {
+        if (userRepository.findByEmail(userDetailsRequest.getEmail()) != null) {
             throw new GeneralBadRequestException("User with given email already exists");
         }
 
-        // TODO: 24.06.2023 here should some validation happen
-        if (!validate(userModel)) {
+        if (!validate(userDetailsRequest)) {
             throw new GeneralBadRequestException("Improper registration data");
         }
 
-        User user = User.builder().name(userModel.getName()).surname(userModel.getSurname()).email(userModel.getEmail()).password(passwordEncoder.encode(userModel.getPassword())).city(userModel.getCity()).cityCode(userModel.getCityCode()).street(userModel.getStreet()).houseNumber(userModel.getHouseNumber()).phoneNumber(userModel.getPhoneNumber()).dateOfBirth(parseDate(userModel.getDateOfBirth())).role(Role.USER).imageUrl(staticAppInfo.getDefaultUserImgUrl()).build();
+        User user = User.builder()
+                .name(userDetailsRequest.getName())
+                .surname(userDetailsRequest.getSurname())
+                .email(userDetailsRequest.getEmail())
+                .password(passwordEncoder.encode(userDetailsRequest.getPassword()))
+                .city(userDetailsRequest.getCity())
+                .cityCode(userDetailsRequest.getCityCode())
+                .street(userDetailsRequest.getStreet())
+                .houseNumber(userDetailsRequest.getHouseNumber())
+                .phoneNumber(userDetailsRequest.getPhoneNumber())
+                .dateOfBirth(parseDate(userDetailsRequest.getDateOfBirth()))
+                .role(Role.USER)
+                .imageUrl(staticAppInfo.getDefaultUserImgUrl()).build();
 
         userRepository.save(user);
+        eventPublisher.publishEvent(new RegistrationEvent(this, user.getEmail(), user.getUsername()));
     }
 
     /**
@@ -88,7 +105,7 @@ public class UserServiceImp implements UserService {
     }
 
     @Override
-    public void createSuperUser(UserModel userModel) {
+    public void createSuperUser(CreateSuperuserRequest userModel) {
         userRepository.save(User.builder().email(userModel.getEmail()).name(userModel.getName()).surname(userModel.getSurname()).password(passwordEncoder.encode(userModel.getPassword())).role(Role.ADMIN).build());
     }
 
@@ -108,84 +125,71 @@ public class UserServiceImp implements UserService {
     }
 
     @Override
-    public UserDetailsDTO getDetails(Authentication authentication) {
-        String email = authentication.getName();
-
-        // this authorities may be helpful in case of introducing ROLE_WORKER
-        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-        User user = userRepository.findByEmail(email);
+    public UserDetailsDTO getMyDetails() {
+        User user = serviceUtils.getLoggedUser();
         return new UserDetailsDTO(user);
     }
 
     @Override
-    public List<OrderDTO> getUserOrders(Authentication authentication) {
-        String email = authentication.getName();
-        User user = userRepository.findByEmail(email);
-        return user.getOrders().stream().map(OrderDTO::new).toList();
+    public List<OrderDTO> getUserOrders(Long id) {
+        return userRepository.findById(id).orElseThrow(() -> new GeneralNotFoundException("User not found"))
+                .getOrders().stream().map(OrderDTO::new).toList();
     }
 
     @Override
+    @Transactional
     public void deleteUser() {
         // it throws proper response error if user not found
-        User user = ServiceUtils.getLoggedUser(userRepository);
+        User user = serviceUtils.getLoggedUser();
+        refreshTokenRepository.deleteAllByUser(user);
         userRepository.delete(user);
     }
 
     @Override
     public void saveUserImage(MultipartFile image) {
-        System.out.println("saveUserImage service() ------------------------");
-        User user = ServiceUtils.getLoggedUser(userRepository);
+        User user = serviceUtils.getLoggedUser();
         String imageName = "user_" + user.getId();
 
         // ex. output: `http://%s:%s/images/user/user_21.png`
-        String imageUrl = imageService.saveImage(image, ServiceUtils.IMAGE_FOLDER.USER, imageName);
+        String imageUrl = imageService.saveImage(image, StaticAppInfo.IMAGE_FOLDER.USER, imageName);
         user.setImageUrl(imageUrl);
         userRepository.save(user);
+
     }
 
     /**
-     *
-     * @param userModel
-     * Function is meant to update only one field at a time except for group of address fields
+     * @param userDetailsRequest Function is meant to update only one field at a time except for group of address fields
      */
     @Override
-    public UserDetailsDTO updateUser(UserModel userModel) {
-        User user = ServiceUtils.getLoggedUser(userRepository);
-        if (userModel.getName() != null && !userModel.getName().isEmpty()) {
-            user.setName(userModel.getName());
-        }
-        else if (userModel.getSurname() != null && !userModel.getSurname().isEmpty()) {
-            user.setSurname(userModel.getSurname());
-        }
-        else if (userModel.getEmail() != null && !userModel.getEmail().isEmpty()) {
-            user.setEmail(userModel.getEmail());
-        }
-        else if (userModel.getOldPassword() != null && userModel.getPassword() != null) {
-//            if (!authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getEmail(), userModel.getOldPassword())).isAuthenticated()) {
-//                throw new GeneralBadRequestException("Provided old password is not correct", InternalAppCode.BAD_OLD_PASSWORD);
-//            }
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getEmail(), userModel.getOldPassword()));
-            user.setPassword(passwordEncoder.encode(userModel.getPassword()));
-        }
-        else if (userModel.getPhoneNumber() != null && !userModel.getPhoneNumber().isEmpty()) {
-            user.setPhoneNumber(userModel.getPhoneNumber());
-        }
-        else if (
-                userModel.getCity() != null && !userModel.getCity().isEmpty() &&
-                userModel.getCityCode() != null && !userModel.getCityCode().isEmpty() &&
-                userModel.getStreet() != null && !userModel.getStreet().isEmpty() &&
-                userModel.getHouseNumber() != null && !userModel.getHouseNumber().isEmpty()
+    public UserDetailsDTO updateUser(UserDetailsRequest userDetailsRequest) {
+        User user = serviceUtils.getLoggedUser();
+        if (userDetailsRequest.getName() != null && !userDetailsRequest.getName().isEmpty()) {
+            user.setName(userDetailsRequest.getName());
+        } else if (userDetailsRequest.getSurname() != null && !userDetailsRequest.getSurname().isEmpty()) {
+            user.setSurname(userDetailsRequest.getSurname());
+        } else if (userDetailsRequest.getEmail() != null && !userDetailsRequest.getEmail().isEmpty()) {
+            user.setEmail(userDetailsRequest.getEmail());
+        } else if (userDetailsRequest.getOldPassword() != null && userDetailsRequest.getPassword() != null) {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getEmail(), userDetailsRequest.getOldPassword()));
+            user.setPassword(passwordEncoder.encode(userDetailsRequest.getPassword()));
+        } else if (userDetailsRequest.getPhoneNumber() != null && !userDetailsRequest.getPhoneNumber().isEmpty()) {
+            user.setPhoneNumber(userDetailsRequest.getPhoneNumber());
+        } else if (
+                userDetailsRequest.getCity() != null && !userDetailsRequest.getCity().isEmpty() &&
+                        userDetailsRequest.getCityCode() != null && !userDetailsRequest.getCityCode().isEmpty() &&
+                        userDetailsRequest.getStreet() != null && !userDetailsRequest.getStreet().isEmpty() &&
+                        userDetailsRequest.getHouseNumber() != null && !userDetailsRequest.getHouseNumber().isEmpty()
         ) {
-            user.setCity(userModel.getCity());
-            user.setCityCode(userModel.getCityCode());
-            user.setStreet(userModel.getStreet());
-            user.setHouseNumber(userModel.getHouseNumber());
+            user.setCity(userDetailsRequest.getCity());
+            user.setCityCode(userDetailsRequest.getCityCode());
+            user.setStreet(userDetailsRequest.getStreet());
+            user.setHouseNumber(userDetailsRequest.getHouseNumber());
         }
 
         return new UserDetailsDTO(userRepository.save(user));
     }
 
-    private boolean validate(UserModel userModel) {
+    private boolean validate(UserDetailsRequest userDetailsRequest) {
         return true;
     }
 

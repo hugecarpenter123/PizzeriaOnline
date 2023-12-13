@@ -1,5 +1,5 @@
 server:
-  port: '8082'
+  port: 8082
   address: 192.168.1.39
 
 image-upload-folder: '${user.home}/Desktop/spring/image-upload-folder'
@@ -7,15 +7,27 @@ image-upload-folder: '${user.home}/Desktop/spring/image-upload-folder'
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    username: 2023_kupiec_arkadiusz
-    url: 
+    username: ''
+    url: ''
     password: ''
   jpa:
     properties:
       hibernate:
-        format_sql: 'true'
+        format_sql: true
         default_schema: java_projekt
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
-    show-sql: 'true'
+    show-sql: true
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ''
+    password: ''
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true

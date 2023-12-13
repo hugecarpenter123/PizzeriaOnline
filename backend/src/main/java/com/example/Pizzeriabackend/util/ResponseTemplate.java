@@ -12,10 +12,4 @@ public class ResponseTemplate {
         response.put("result", result);
         return ResponseEntity.status(status).body(response);
     }
-
-    public static ResponseEntity<Map<String, ?>> error(HttpStatus status, String errorMessage) {
-        Map<String, String> response = new HashMap<>();
-        response.put("error", errorMessage);
-        return ResponseEntity.status(status).body(response);
-    }
 }

@@ -20,8 +20,8 @@ public class MenuService {
 
     public Map<String, Object> getMenu() {
         Map<String, Object> menu = new HashMap<>();
-        menu.put("pizzaList", pizzaService.getAllPizzas2());
-        menu.put("drinkList", drinksService.getAllDrinks2());
+        menu.put("pizzaList", pizzaService.getAllPizzas());
+        menu.put("drinkList", drinksService.getAllDrinks());
         return menu;
     }
 }
