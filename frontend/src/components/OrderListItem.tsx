@@ -47,13 +47,13 @@ const OrderListItem = ({ order }: Props) => {
     }
 
     const onCancelOrderPressed = () => {
-        deleteOrder(order.order_id);
+        deleteOrder(order.orderId);
     }
 
     return (
         <View style={styles.itemContainer}>
             <View style={styles.listItem}>
-                <Text>{order.order_id}</Text>
+                <Text>{order.orderId}</Text>
                 <View style={styles.header}>
                     <Text style={styles.date}>{formattedDateTime}</Text>
                     <Text style={styles.orderType}>{orderTypeMapper[order.orderType]}</Text>

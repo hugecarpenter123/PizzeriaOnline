@@ -111,7 +111,6 @@ const useUpdateUser = (): RegistrationHookResult => {
             if (!containsJson) {
                 // throw new Error("Request arrived with no JSON payload")
                 console.log("Request arrived with no JSON payload");
-                setSuccess(true)
                 
             }
             // response contains JSON

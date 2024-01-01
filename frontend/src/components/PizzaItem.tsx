@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { memo, useState } from "react";
 import { Text, View, StyleSheet, TouchableOpacity, TouchableNativeFeedback, useColorScheme } from "react-native";
 import { Pizza } from "../contexts/MainScreenContext";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../screens/AppStacks";
-import { PizzaScreenParamList } from "../screens/PizzaScreen";
+import { PizzaScreenParamList } from "../screens/Pizza/PizzaScreen";
 import { commonStyles } from "../utils/StaticAppInfo";
 
 type Props = {
@@ -12,14 +12,10 @@ type Props = {
   navigation: NativeStackNavigationProp<PizzaScreenParamList & RootStackParamList, "PizzaList">;
 }
 
-function PizzaItem({ pizza, addToCart, navigation }: Props) {
+const PizzaItem = ({ pizza, addToCart, navigation }: Props) => {
+  console.log(`PizzaItem -${pizza.id}- render`);
 
   const [selectedPriceIndex, setSelectedPriceIndex] = useState(1);
-
-  const handlePriceClick = (priceIndex: number) => {
-    setSelectedPriceIndex(priceIndex);
-  };
-
   const onPizzaDetailsPress = (pizzaId: number) => {
     navigation.navigate('PizzaDetail', { pizzaId })
   }
@@ -27,8 +23,6 @@ function PizzaItem({ pizza, addToCart, navigation }: Props) {
   const pizzaPrices = [pizza.smallSizePrice, pizza.mediumSizePrice, pizza.bigSizePrice]
   const pizzaSizes = ["Mała", "Średnia", "Duża"]
 
-  // const colorScheme = useColorScheme();
-  // const captionColor = colorScheme === 'dark' ? commonStyles.darkThemeHint : commonStyles.lightThemeHint;
 
   return (
     <TouchableNativeFeedback onPress={() => onPizzaDetailsPress(pizza.id)}>
@@ -65,8 +59,6 @@ function PizzaItem({ pizza, addToCart, navigation }: Props) {
     </TouchableNativeFeedback>
   );
 }
-
-export default PizzaItem;
 
 const styles = StyleSheet.create({
   pizzaItem: {
@@ -141,3 +133,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 });
+
+
+export default memo(PizzaItem);

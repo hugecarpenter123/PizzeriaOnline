@@ -44,6 +44,7 @@ const useLogin = (): LoginHookResult => {
             const containsJson = response?.headers?.get('Content-Type')?.includes('application/json');
             if (!response.ok) {
                 // status code: 4xx, check for messages, if no then display status code
+                console.log(`response: \n${JSON.stringify(response)}`)
                 const body = containsJson ? await response.json() : null;
                 const errorMessage = containsJson ? body.message || body : response.status;
                 internalAppCodeRef.current = containsJson ? body.internalAppCode : null
@@ -72,7 +73,7 @@ const useLogin = (): LoginHookResult => {
                 }
             }
         } catch (error: any) {
-            console.error("catch block: " + error)
+            console.error("catch block: " + JSON.stringify(error))
 
             if (internalAppCodeRef.current) {
                 errorInterceptor(internalAppCodeRef.current, setError);

@@ -3,11 +3,12 @@ import { View, TouchableOpacity, StyleSheet, Text } from 'react-native'
 import ConfirmationPopup from "./ConfirmationPopup";
 import useDeleteAccount from "../hooks/useDeleteAccount";
 import LoadingIndicator from "./LoadingIndicator";
-import ForceLogout from "../utils/ForceLogout";
+import useForceLogout from "../hooks/useForceLogout";
 
 const UserInfoBottom = () => {
     const [showPopup, setShowPopup] = useState(false);
     const {loading, deleteAccount} = useDeleteAccount();
+    const forceLogout = useForceLogout();
 
     // popup related -----------
     const onDeleteAccPressed = () => {
@@ -25,7 +26,7 @@ const UserInfoBottom = () => {
     // END popup related -------
 
     const onLogoutPressed = () => {
-        ForceLogout();
+        forceLogout();
     }
 
     return (

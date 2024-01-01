@@ -21,7 +21,6 @@ const useDeleteOrder = (): DeleteOrderHookResult => {
     const [error, setError] = useState<string | null>(null);
     const { token, logout } = useContext(AppContext);
     const { fetchUserOrders } = useFetchUserOrders();
-    const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
     const { errorInterceptor } = useErrorInterceptor();
     const internalAppCodeRef = useRef<InternalAppCode | null>(null);

@@ -2,23 +2,26 @@ import React, { useState, useEffect, useContext, useRef } from 'react'
 import showToast from '../utils/showToast';
 import { ApiUrls } from '../utils/urls';
 import { AppContext } from '../contexts/AppContext';
-import { MainScreenContext } from '../contexts/MainScreenContext';
+import { MainScreenContext, UserOrder } from '../contexts/MainScreenContext';
 import useErrorInterceptor from './UseErrorInterceptor';
 import { InternalAppCode } from '../utils/StaticAppInfo';
 
 type FetchUserOrdersResult = {
     loading: boolean,
-    success: boolean,
     error: string | null,
+    // userOrders: undefined | UserOrder[];
     fetchUserOrders: () => void,
 }
 
+
+// todo: trzeba zakutalizwać stan w kontekście aplikacji
 const useFetchUserOrders = (): FetchUserOrdersResult => {
-    const [loading, setLoading] = useState(false);
-    const [success, setSuccess] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const { setUserOrders } = useContext(MainScreenContext);
     const { token } = useContext(AppContext);
+    const { setUserOrders} = useContext(MainScreenContext);
+
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    // const [userOrders, setUserOrders] = useState<undefined | UserOrder[]>(undefined);
     const { errorInterceptor } = useErrorInterceptor();
 
     const internalAppCodeRef = useRef<InternalAppCode | null>(null);
@@ -37,10 +40,13 @@ const useFetchUserOrders = (): FetchUserOrdersResult => {
     }, [error]);
 
     const fetchUserOrders = async (): Promise<void> => {
+        setError(null);
+        setLoading(true);
+
         try {
             setLoading(true);
             setError(null);
-            const url = `${ApiUrls.GET_USER_ORDERS}`;
+            const url = ApiUrls.GET_USER_ORDERS;
 
             const response = await fetch(url, {
                 method: 'GET',
@@ -61,7 +67,7 @@ const useFetchUserOrders = (): FetchUserOrdersResult => {
 
             // If response is empty, return null
             if (!response?.headers?.get('Content-Type')?.includes('application/json')) {
-                console.log("successfull request - no JSON")
+                throw new Error("Response doesn't contain JSON");
             } else {
                 // Parse the response data
                 const responseData = await response.json();
@@ -73,11 +79,10 @@ const useFetchUserOrders = (): FetchUserOrdersResult => {
                     // here all necessary data parsed successfully --------------------
                     console.log("User orders fetched successfully");
                     setUserOrders(result);
-                    setSuccess(true);
                 }
             }
         } catch (error: any) {
-            console.error("catch block: " + error)
+            console.error("catch block: " + JSON.stringify(error))
             if (internalAppCodeRef.current) {
                 errorInterceptor(internalAppCodeRef.current, setError);
             }
@@ -91,7 +96,7 @@ const useFetchUserOrders = (): FetchUserOrdersResult => {
 
     };
 
-    return { loading, success, error, fetchUserOrders };
+    return { loading, error, fetchUserOrders };
 }
 
 export default useFetchUserOrders;

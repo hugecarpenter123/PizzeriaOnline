@@ -2,7 +2,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React, { useContext, useState, useEffect } from 'react';
 import LoginScreen from './LoginScreen';
 import RegistrationScreen from './RegistrationScreen';
-import MainScreenWithContext from './MainScreenWithContext';
+import MainScreenTabs from './MainScreenTabs';
 import { AppContext } from '../contexts/AppContext';
 import { Text, View } from 'react-native';
 import useAppInitializer from '../hooks/useAppInitializer';
@@ -10,7 +10,7 @@ import useAppInitializer from '../hooks/useAppInitializer';
 export type RootStackParamList = {
     LoginScreen: undefined;
     RegistrationScreen: undefined;
-    MainScreen: undefined;
+    MainScreenTabs: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -19,15 +19,13 @@ function AppStacks() {
     const { token, storageDataFetched } = useContext(AppContext);
     const {appInitialized, SplashScreen} = useAppInitializer();
 
-    // todo: improve splash screen 
-    // if data from storage is not yet fetched show splashscreen until its clear whether token is or not
     if (!storageDataFetched || !appInitialized) {
         return <SplashScreen />;
     }
 
     return (
         <Stack.Navigator
-            initialRouteName={token ? "MainScreen" : "LoginScreen"}
+            initialRouteName={token ? "MainScreenTabs" : "LoginScreen"}
         >   
             <Stack.Screen
                 name="LoginScreen"
@@ -40,8 +38,8 @@ function AppStacks() {
                 options={{ title: 'Rejestracja', headerShown: false }}
             />
             <Stack.Screen
-                name="MainScreen"
-                component={MainScreenWithContext}
+                name="MainScreenTabs"
+                component={MainScreenTabs}
                 options={{ headerShown: false }}
             />
         </Stack.Navigator>

@@ -2,9 +2,9 @@ import React, { useState, useEffect, useContext, useRef } from 'react'
 import showToast from '../utils/showToast';
 import { ApiUrls } from '../utils/urls';
 import { AppContext, UserDetails, UserReview } from '../contexts/AppContext';
-import useMenuFetcher from './useMenuFetcher';
 import useErrorInterceptor from './UseErrorInterceptor';
 import { InternalAppCode } from '../utils/StaticAppInfo';
+import { MainScreenContext } from '../contexts/MainScreenContext';
 
 export type ReviewModel = {
     pizzaId: number,
@@ -33,7 +33,7 @@ const usePutReview = (): PutReviewHookResult => {
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const { token, userDetails, setUserDetails } = useContext(AppContext);
-    const { fetchMenu } = useMenuFetcher();
+    const { fetchMenu } = useContext(MainScreenContext);
     const { errorInterceptor } = useErrorInterceptor();
 
     const internalAppCodeRef = useRef<InternalAppCode | null>(null);
@@ -100,7 +100,7 @@ const usePutReview = (): PutReviewHookResult => {
             setError(null);
             const payload = JSON.stringify(data);
             const url = `${ApiUrls.PUT_REVIEW}/${reviewId}`;
-            
+
             const response = await fetch(url, {
                 method: 'PUT',
                 headers: {
@@ -127,7 +127,7 @@ const usePutReview = (): PutReviewHookResult => {
             // response contains JSON
             else {
                 const responseData = await response.json();
-    
+
                 // Check if the response contains the expected "result" key
                 if (!responseData.hasOwnProperty('result')) {
                     throw new Error('Invalid response data: "result" key is missing.');

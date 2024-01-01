@@ -2,7 +2,7 @@ import { useContext } from 'react';
 import useExchangeTokens from "./useExchangeTokens";
 import { InternalAppCode } from "../utils/StaticAppInfo";
 import { AppContext } from '../contexts/AppContext';
-import ForceLogout from '../utils/ForceLogout';
+import useForceLogout from './useForceLogout';
 
 
 type ErrorInterceptorType = (
@@ -24,15 +24,15 @@ const useErrorInterceptor = (): ErrorInterceptorHookResult => {
                 break;
             case InternalAppCode.BAD_ACCESS_TOKEN:
                 setError("Sesja wygasła, zaloguj się ponownie")
-                ForceLogout();
+                useForceLogout();
                 break;
             case InternalAppCode.BAD_REFRESH_TOKEN:
                 setError("Sesja wygasła, zaloguj się ponownie")
-                ForceLogout();
+                useForceLogout();
                 break;
             case InternalAppCode.REFRESH_TOKEN_EXPIRED:
                 setError("Sesja wygasła, zaloguj się ponownie")
-                ForceLogout();
+                useForceLogout();
                 break;
             case InternalAppCode.NO_ADMIN_PERMS:
                 break;
