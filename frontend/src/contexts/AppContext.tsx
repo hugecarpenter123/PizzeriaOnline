@@ -1,4 +1,4 @@
-import React, { ReactNode, useState, createContext, useEffect } from "react"
+import React, { ReactNode, useState, createContext, useEffect, useCallback } from "react"
 import { useInternetConnectivity } from "../hooks/useInternetConnectivity";
 import * as SecureStore from "expo-secure-store";
 import { orderedDrink, orderedPizza } from "./MainScreenContext";
@@ -88,6 +88,7 @@ export const AppContext = createContext<AppContextProps>({
 });
 
 const AppContextProvider = ({ children }: Props) => {
+  console.log("AppContextProvider render");
 
   const [token, setToken] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
@@ -148,20 +149,26 @@ const AppContextProvider = ({ children }: Props) => {
     saveDataToStorage();
   }, [token, refreshToken, userDetails]);
 
-  const logout = () => {
-    setToken(null);
-    setUserDetails(null);
-  }
+  const logout = useCallback(
+    () => {
+      setToken(null);
+      setUserDetails(null);
+    },
+    []
+  )
 
-  const login = (token: string, refreshToken: string, userDetails: UserDetails) => {
-    setToken(token);
-    setRefreshToken(refreshToken);
-    setUserDetails(userDetails);
-  }
+  const login = useCallback(
+    (token: string, refreshToken: string, userDetails: UserDetails) => {
+      setToken(token);
+      setRefreshToken(refreshToken);
+      setUserDetails(userDetails);
+    },
+    []
+  );
 
-  const removeCartStorage = async () => {
-    await SecureStore.deleteItemAsync("cart");
-  }
+  // const removeCartStorage = async () => {
+  //   await SecureStore.deleteItemAsync("cart");
+  // }
 
   return (
     <AppContext.Provider value={{ isConnected, token, setToken, refreshToken, userDetails, setUserDetails, storageDataFetched, logout, login }}>

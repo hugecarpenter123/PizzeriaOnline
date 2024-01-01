@@ -2,12 +2,12 @@ import React, { useState, useEffect, useContext, useRef } from 'react'
 import showToast from '../utils/showToast';
 import { ApiUrls } from '../utils/urls';
 import { AppContext, UserDetails, UserReview } from '../contexts/AppContext';
-import useMenuFetcher from './useMenuFetcher';
 import useUpdateUser from './useUpdateUser';
 import useFetchUserDetails from './useFetchUserDetails';
 import { InternalAppCode } from '../utils/StaticAppInfo';
 import { initialWindowMetrics } from 'react-native-safe-area-context';
 import useErrorInterceptor from './UseErrorInterceptor';
+import { MainScreenContext } from '../contexts/MainScreenContext';
 
 export type ReviewModel = {
     pizzaId: number,
@@ -36,7 +36,7 @@ const useCreateReview = (): PutReviewHookResult => {
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const { token } = useContext(AppContext);
-    const { fetchMenu } = useMenuFetcher();
+    const { fetchMenu } = useContext(MainScreenContext);
     const { fetchUserDetails: updateUserDetails } = useFetchUserDetails();
     const { errorInterceptor } = useErrorInterceptor();
 

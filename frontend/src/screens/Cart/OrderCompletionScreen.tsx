@@ -39,6 +39,7 @@ export type OrderPayloadModel = {
 type Props = NativeStackScreenProps<CartParamList, 'OrderCompletion'>
 
 const OrderCompletionScreen = ({ route, navigation }: Props) => {
+    console.log("OrderCompletionScreen render")
     const { loading, success, addOrder } = useCreateOrder();
     const { token, userDetails } = useContext(AppContext);
     const { cart } = useContext(MainScreenContext);

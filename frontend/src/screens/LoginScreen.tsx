@@ -11,6 +11,7 @@ import { commonStyles } from "../utils/StaticAppInfo";
 type Props = NativeStackScreenProps<RootStackParamList, 'LoginScreen'>;
 
 export default function LoginScreen({ route, navigation }: Props) {
+    console.log("LoginScreen render")
     const [login, setLogin] = useState<string>('');
     const [password, setPassword] = useState<string>('')
     const { loading, success, error, loginRequest } = useLogin();
@@ -29,7 +30,7 @@ export default function LoginScreen({ route, navigation }: Props) {
     useEffect(() => {
         if (success) {
             showToast("Zalogowano", 0);
-            navigation.replace("MainScreen");
+            navigation.replace("MainScreenTabs");
         }
     }, [success])
 
@@ -44,7 +45,7 @@ export default function LoginScreen({ route, navigation }: Props) {
     }
 
     const onContinueUnloggedPressed = (): void => {
-        navigation.replace("MainScreen");
+        navigation.replace("MainScreenTabs");
     }
 
     const validateInputs = () => {

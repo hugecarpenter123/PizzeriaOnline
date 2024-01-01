@@ -27,8 +27,12 @@ export default function EditField({ field, label, value, validation, setLoading 
     const handleEdit = () => {
         // for userDetails puprposes send request
         update({ [field]: fieldValue } as UserModel);
-        setLoading(loading);
     }
+
+    useEffect(() => {
+        console.log("loading state: " + loading)
+        setLoading(loading);
+    }, [loading]);
 
     return (
         <View style={styles.fieldContainer}>

@@ -24,6 +24,7 @@ export type RegistrationData = {
 
 type Props = NativeStackScreenProps<RootStackParamList, 'RegistrationScreen'>;
 export default function RegistrationScreen({ route, navigation }: Props) {
+    console.log("RegistrationScreen render")
 
     const { loading, error, success, register } = useRegistration();
     const [formData, setFormData] = useState({
@@ -200,7 +201,7 @@ export default function RegistrationScreen({ route, navigation }: Props) {
     }
 
     const onContinueUnloggedPressed = (): void => {
-        navigation.replace("MainScreen");
+        navigation.replace("MainScreenTabs");
     }
     // END NAVIGATION RELATED ----------------------------------------------
 

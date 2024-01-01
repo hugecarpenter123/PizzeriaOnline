@@ -6,7 +6,7 @@ import useFetchUserOrders from './useFetchUserOrders';
 import { CommonActions, NavigationProp, useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../screens/AppStacks';
 import { InternalAppCode } from '../utils/StaticAppInfo';
-import ForceLogout from '../utils/ForceLogout';
+import useForceLogout from './useForceLogout';
 import useErrorInterceptor from './UseErrorInterceptor';
 
 type DeleteAccountHookResult = {
@@ -38,7 +38,7 @@ const useDeleteAccount = (): DeleteAccountHookResult => {
         }
         else if (success) {
             showToast("Pomyślnie usunięto konto", 0);
-            ForceLogout();
+            useForceLogout();
         }
     }, [error, success]);
 
