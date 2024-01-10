@@ -1,48 +1,43 @@
-import React, { useState, useEffect, useContext, useRef } from 'react'
-import showToast from '../utils/showToast';
-import { ApiUrls } from '../utils/urls';
-import { AppContext } from '../contexts/AppContext';
-import { InternalAppCode } from '../utils/StaticAppInfo';
-import FetchError from '../utils/Errors/FetchError';
-import useErrorInterceptor from './useErrorInterceptor';
-import timeout from '../utils/Timeout';
+import { useContext, useEffect, useState } from "react";
+import { ApiUrls } from "../utils/urls";
+import { MainScreenContext, Menu } from "../contexts/MainScreenContext";
+import { ToastAndroid } from "react-native";
+import showToast from "../utils/showToast";
+import FetchError from "../utils/Errors/FetchError";
+import { InternalAppCode } from "../utils/StaticAppInfo";
+import useErrorInterceptor from "./useErrorInterceptor";
+import timeout from "../utils/Timeout";
 
 
-type FetchUserDetailsResult = {
+type FetchMenuHookResult = {
+    error: null | string,
     loading: boolean,
-    success: boolean,
-    error: string | null,
-    fetchUserDetails: () => void,
+    // menu: Menu | undefined,
+    fetchMenu: () => Promise<void>,
 }
 
-const useFetchUserDetails = (): FetchUserDetailsResult => {
-    const [loading, setLoading] = useState(false);
-    const [success, setSuccess] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const { token, setUserDetails } = useContext(AppContext);
+const useFetchMenu = (): FetchMenuHookResult => {
+    const [error, setError] = useState<null | string>(null);
+    const [loading, setLoading] = useState<boolean>(false);
+    const { setMenu } = useContext(MainScreenContext);
     const { errorInterceptor } = useErrorInterceptor();
-
 
     useEffect(() => {
         if (error) {
-            showToast(error, 1);
+            showToast(error, ToastAndroid.LONG);
         }
-    }, [error]);
+    }, [error])
 
-    const fetchUserDetails = async (newToken?: string): Promise<void> => {
-        let internalAppCode = null;
+    const fetchMenu = async () => {
+        console.log("fetch menu called");
         let errorMessage = null;
+        let internalAppCode = null;
+        setLoading(true);
+        setError(null);
+
         try {
-            setLoading(true);
-            setError(null);
             const { timeoutId, controller } = timeout();
-            const url = ApiUrls.GET_USER_DETAILS;
-            const response = await fetch(url, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${newToken ? newToken : token}`,
-                },
+            const response = await fetch(ApiUrls.GET_MENU, {
                 signal: controller.signal,
             })
 
@@ -56,7 +51,7 @@ const useFetchUserDetails = (): FetchUserDetailsResult => {
                 throw new FetchError({ errorMessage, internalAppCode });
             }
 
-            // If response is empty, return null
+            // If response is empty throw proper error
             if (!response?.headers?.get('Content-Type')?.includes('application/json')) {
                 errorMessage = "successfull request, but no JSON";
                 internalAppCode = InternalAppCode.BAD_JSON_RESPONSE;
@@ -71,12 +66,12 @@ const useFetchUserDetails = (): FetchUserDetailsResult => {
                 internalAppCode = InternalAppCode.BAD_JSON_RESPONSE;
                 throw new FetchError({ errorMessage, internalAppCode });
             }
+
             // all necessary data parsed successfully
             const result = responseData.result;
-            console.log("UserDetails fetched successfully")
-            setUserDetails(result);
+            console.log("menu fetched successfully")
+            setMenu(result);
             setLoading(false);
-            setSuccess(true);
 
 
         } catch (error: any) {
@@ -89,13 +84,16 @@ const useFetchUserDetails = (): FetchUserDetailsResult => {
                 : error.name === "AbortError" ? "Request został anulowany przez timeout" : `Niezdefiniowany błąd: ${error}`;
 
             console.error(`InernalAppCode: ${internalAppCode}`);
-            console.error(`fetchUserDetails error: ${errorMessage}`);
-            errorInterceptor(internalAppCode, setError, setLoading, fetchUserDetails);
+            console.error(`fetchMenu error: ${errorMessage}`);
+            errorInterceptor(internalAppCode, setError, setLoading);
         }
-
     };
 
-    return { loading, success, error, fetchUserDetails };
-}
+    return {
+        loading,
+        error,
+        fetchMenu,
+    };
+};
 
-export default useFetchUserDetails;
+export default useFetchMenu;

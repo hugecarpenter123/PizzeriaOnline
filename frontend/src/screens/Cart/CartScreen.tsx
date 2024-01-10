@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect, useMemo } from "react";
 import { SafeAreaView, Text, TouchableOpacity, StyleSheet, View } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { FlatList } from 'react-native-gesture-handler';
@@ -10,14 +10,17 @@ import { CartParamList } from "./CartStack";
 
 type Props = NativeStackScreenProps<CartParamList, 'Cart'>;
 
-export default function CartScreen({ route, navigation }: Props) {
+const CartScreen = ({ route, navigation }: Props) => {
+    console.log("CartScreen render")
 
     const { cart, clearCart, menu, addOrderItem, removeOrderItem } = useContext(MainScreenContext);
     const [sum, setSum] = useState(0);
-    const data = [...cart.orderedDrinkList, ...cart.orderedPizzaList]
     const [showPopup, setShowPopup] = useState(false);
+    
+    const data = useMemo(() => [...cart.orderedDrinkList, ...cart.orderedPizzaList], [cart]);
 
     useEffect(() => {
+        console.log("CartScreen.useEffect()[data, menu]")
         // Calculate the total sum
         const totalSum = data.reduce((sum, item) => {
             const menuItem = "pizzaId" in item
@@ -31,6 +34,10 @@ export default function CartScreen({ route, navigation }: Props) {
         // Update the state with the total sum
         setSum(totalSum);
     }, [data, menu]);
+
+    useEffect(() => {
+        console.log("CartScreen.useEffect()[cart]")
+    }, [cart])
 
     // flat list related =====================================================
 
@@ -47,12 +54,14 @@ export default function CartScreen({ route, navigation }: Props) {
     // END flat list related ==================================================
     type ItemProps = {
         item: orderedPizza | orderedDrink
+        index: number
     }
 
     const pizzaSizes = ["Mała", "Średnia", "Duża"]
     const drinkSizes = ["330ml", "500ml", "1000ml"]
 
-    const renderItem = ({ item }: ItemProps) => {
+    const renderItem = ({ item, index }: ItemProps) => {
+        console.log(`CartScreen.renderItem -${index}-`)
         // Use destructuring and optional chaining for menuItem
         const menuItem = 'pizzaId' in item
             ? menu?.pizzaList.find((x) => x.id === item.pizzaId)
@@ -187,3 +196,6 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
 })
+
+
+export default CartScreen;

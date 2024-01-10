@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Pressable, Platfor
 import DateTimePicker from '@react-native-community/datetimepicker';
 import useUpdateUser, { UserModel } from '../hooks/useUpdateUser';
 import { commonStyles } from '../utils/StaticAppInfo';
+import { useIsFocused } from '@react-navigation/native';
 
 type EditFieldProps = {
     field: string,
@@ -17,10 +18,11 @@ export default function DateEditField({ field, label, value, validation, setLoad
     const [fieldValue, setFieldValue] = useState<string>(value)
     const [error, setError] = useState<string | null>(null);
     const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
-    const {loading, update} = useUpdateUser();
+    const {loading, update, error: updateError} = useUpdateUser();
 
     const colorScheme = useColorScheme();
     const textColor = colorScheme === 'dark' ? commonStyles.darkThemeText : commonStyles.lightThemeText;
+    const isFocused = useIsFocused();
 
     // DATE PICKER RELATED --------------------------------------------------
     const toggleDatePicker = () => {
@@ -33,6 +35,13 @@ export default function DateEditField({ field, label, value, validation, setLoad
     useEffect(() => {
         setLoading(loading)
     }, [loading])
+
+    useEffect(() => {
+        if (updateError || !isFocused) {
+            setFieldValue(value);
+            setError(null);
+        }
+    })
 
     const onChangeDatePicker = ({ type }: any, selectedDate: any) => {
         // todo: handle scenario for IOS

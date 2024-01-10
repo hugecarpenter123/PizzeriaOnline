@@ -36,7 +36,6 @@ export default class Validation {
     static isCityValid(input: string): string | null {
         if (input.trim() === "") return "Pole nie może być puste";
         if (this.isNonCharacter(input)) return "Nazwa miasta powinna składać się z liter";
-        if (!this.fullNameRegex.test(input)) return "Pełne imię musi być dwuczłonowe"
         return null;
     }
 

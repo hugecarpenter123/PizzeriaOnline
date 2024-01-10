@@ -1,8 +1,10 @@
 import React, { useState, useContext, useRef } from "react";
 import { ApiUrls } from "../utils/urls";
 import { AppContext } from "../contexts/AppContext";
-import useErrorInterceptor from "./UseErrorInterceptor";
+import useErrorInterceptor from "./useErrorInterceptor";
 import { InternalAppCode } from "../utils/StaticAppInfo";
+import FetchError from "../utils/Errors/FetchError";
+import timeout from "../utils/Timeout";
 
 type LoginHookResult = {
     loading: boolean;
@@ -24,64 +26,78 @@ const useLogin = (): LoginHookResult => {
     const [error, setError] = useState<string | null>(null);
     const { login } = useContext(AppContext)
     const { errorInterceptor } = useErrorInterceptor();
-    const internalAppCodeRef = useRef<InternalAppCode | null>(null);
 
     const loginRequest = async (data: LoginData): Promise<void> => {
+        let internalAppCode = null;
+        let errorMessage = null;
+
         try {
             setLoading(true);
             setError(null);
-            setSuccess(false);
-            const payload = JSON.stringify(data);
 
+            const { timeoutId, controller } = timeout();
+            const payload = JSON.stringify(data);
             const response = await fetch(ApiUrls.POST_LOGIN, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: payload,
+                signal: controller.signal,
             })
 
-            const containsJson = response?.headers?.get('Content-Type')?.includes('application/json');
+            clearTimeout(timeoutId);
+
             if (!response.ok) {
-                // status code: 4xx, check for messages, if no then display status code
+                const containsJson = response?.headers?.get('Content-Type')?.includes('application/json');
                 const body = containsJson ? await response.json() : null;
-                const errorMessage = containsJson ? body.message || body : response.status;
-                internalAppCodeRef.current = containsJson ? body.internalAppCode : null
-                throw new Error(errorMessage);
+                errorMessage = containsJson ? body.message || body : response.status;
+                internalAppCode = containsJson ? body.internalAppCode : InternalAppCode.UNDEFINED_ERROR
+                throw new FetchError({ errorMessage, internalAppCode });
             }
 
-            // If response is empty
-            if (!containsJson) {
-                throw new Error("Server response doesn't contain required data");
+            // If response is empty throw
+            if (!response?.headers?.get('Content-Type')?.includes('application/json')) {
+                errorMessage = "successfull request, but no JSON";
+                internalAppCode = InternalAppCode.BAD_JSON_RESPONSE;
+                throw new FetchError({ errorMessage, internalAppCode });
             }
-            // response contains JSON
-            else {
-                const responseData = await response.json();
-                // Check if the response contains the expected "token" & "userDetails" key
-                if (!responseData.hasOwnProperty('userDetails') || !responseData.hasOwnProperty('token')
-                    || !responseData.hasOwnProperty('refreshToken')) {
-                    throw new Error('Invalid response: no data with required keys.');
-                } else {
-                    const userDetails = responseData.userDetails;
-                    const token = responseData.token;
-                    const refreshToken = responseData.refreshToken;
-                    // here all necessary data parsed successfully --------------------
-                    console.log("Successfully logged, tokens & userDetails assigned")
-                    setSuccess(true);
-                    login(token, refreshToken, userDetails)
-                }
-            }
-        } catch (error: any) {
-            console.error("catch block: " + error)
 
-            if (internalAppCodeRef.current) {
-                errorInterceptor(internalAppCodeRef.current, setError);
+            // Parse the response data
+            const responseData = await response.json();
+
+            // Check if the response contains the expected "result" key
+            if (
+                !responseData.hasOwnProperty('token') ||
+                !responseData.hasOwnProperty('refreshToken') ||
+                !responseData.hasOwnProperty('userDetails')
+            ) {
+                errorMessage = 'Invalid JSON response: "result" key is missing.';
+                internalAppCode = InternalAppCode.BAD_JSON_RESPONSE;
+                throw new FetchError({ errorMessage, internalAppCode });
             }
-            else {
-                setError("Wydarzył się nieoczekiwany błąd, spróbuj ponownie później")
-            }
-        } finally {
+
+            // here all necessary data parsed successfully --------------------
+            const userDetails = responseData.userDetails;
+            const token = responseData.token;
+            const refreshToken = responseData.refreshToken;
+            setSuccess(true);
             setLoading(false);
+            login(token, refreshToken, userDetails)
+            console.log("Successfully logged, tokens & userDetails assigned")
+
+        } catch (error: any) {
+            const internalAppCode = error instanceof FetchError
+                ? error.internalAppCode
+                : error.name === "AbortError" ? InternalAppCode.REQUEST_TIMED_OUT : InternalAppCode.UNDEFINED_ERROR;
+
+            const errorMessage = error instanceof FetchError
+                ? error.message
+                : error.name === "AbortError" ? "Request został anulowany przez timeout" : `Niezdefiniowany błąd: ${error}`;
+
+            console.error(`InernalAppCode: ${internalAppCode}`);
+            console.error(`login error: ${errorMessage}`);
+            errorInterceptor(internalAppCode, setError, setLoading);
         }
 
 

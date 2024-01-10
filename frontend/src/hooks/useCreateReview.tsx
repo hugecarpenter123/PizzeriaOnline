@@ -2,12 +2,15 @@ import React, { useState, useEffect, useContext, useRef } from 'react'
 import showToast from '../utils/showToast';
 import { ApiUrls } from '../utils/urls';
 import { AppContext, UserDetails, UserReview } from '../contexts/AppContext';
-import useMenuFetcher from './useMenuFetcher';
 import useUpdateUser from './useUpdateUser';
 import useFetchUserDetails from './useFetchUserDetails';
 import { InternalAppCode } from '../utils/StaticAppInfo';
 import { initialWindowMetrics } from 'react-native-safe-area-context';
-import useErrorInterceptor from './UseErrorInterceptor';
+import useErrorInterceptor from './useErrorInterceptor';
+import { MainScreenContext } from '../contexts/MainScreenContext';
+import useFetchMenu from './useFetchMenu';
+import timeout from '../utils/Timeout';
+import FetchError from '../utils/Errors/FetchError';
 
 export type ReviewModel = {
     pizzaId: number,
@@ -36,22 +39,9 @@ const useCreateReview = (): PutReviewHookResult => {
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const { token } = useContext(AppContext);
-    const { fetchMenu } = useMenuFetcher();
+    const { fetchMenu } = useFetchMenu();
     const { fetchUserDetails: updateUserDetails } = useFetchUserDetails();
     const { errorInterceptor } = useErrorInterceptor();
-
-    const internalAppCodeRef = useRef<InternalAppCode | null>(null);
-    const dataCopyRef = useRef<ReviewModel | null>(null);
-
-    useEffect(() => {
-        if (internalAppCodeRef.current && dataCopyRef.current) {
-            addReview(dataCopyRef.current)
-            dataCopyRef.current = null;
-            internalAppCodeRef.current = null;
-        } else {
-            console.log("Token changed but no retry");
-        }
-    }, [token])
 
     useEffect(() => {
         if (error) {
@@ -70,30 +60,35 @@ const useCreateReview = (): PutReviewHookResult => {
         updateUserDetails();
     }
 
-    const addReview = async (data: ReviewModel): Promise<void> => {
+    const addReview = async (data: ReviewModel, newToken?: string): Promise<void> => {
+        let errorMessage = null;
+        let internalAppCode = null;
+        setLoading(true);
+        setError(null);
+
         try {
-            dataCopyRef.current = data;
-            setLoading(true);
-            setError(null);
+            const { timeoutId, controller } = timeout();
             const url = `${ApiUrls.POST_REVIEW}`;
 
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${newToken ? newToken : token}`,
                 },
                 body: JSON.stringify(data),
+                signal: controller.signal,
             });
 
+            clearTimeout(timeoutId);
+
+
             if (!response.ok) {
-                // Handle error response with status code 4xx
                 const containsJson = response?.headers?.get('Content-Type')?.includes('application/json');
                 const body = containsJson ? await response.json() : null;
-                const errorMessage = containsJson ? (body.message || body) : response.status;
-                internalAppCodeRef.current = containsJson ? body.internalAppCode : null
-
-                throw new Error(errorMessage);
+                errorMessage = containsJson ? body.message || body : response.status;
+                internalAppCode = containsJson ? body.internalAppCode : InternalAppCode.UNDEFINED_ERROR
+                throw new FetchError({ errorMessage, internalAppCode });
             }
 
             // here reponse is ok
@@ -101,16 +96,19 @@ const useCreateReview = (): PutReviewHookResult => {
             setSuccess(true);
 
         } catch (error: any) {
-            console.log("catch block: " + error)
+            const internalAppCode = error instanceof FetchError
+                ? error.internalAppCode
+                : error.name === "AbortError" ? InternalAppCode.REQUEST_TIMED_OUT : InternalAppCode.UNDEFINED_ERROR;
 
-            if (internalAppCodeRef.current) {
-                errorInterceptor(internalAppCodeRef.current, setError);
-            }
-            else {
-                setError("Wydarzył się nieoczekiwany błąd, spróbuj ponownie później")
-            }
-        } finally {
-            if (internalAppCodeRef.current !== InternalAppCode.ACCESS_TOKEN_EXPIRED) setLoading(false);
+            const errorMessage = error instanceof FetchError
+                ? error.message
+                : error.name === "AbortError" ? "Request został anulowany przez timeout" : `Niezdefiniowany błąd: ${error}`;
+
+            console.error(`InernalAppCode: ${internalAppCode}`);
+            console.error(`createReview error: ${errorMessage}`);
+
+            const callback = () => addReview(data, newToken);
+            errorInterceptor(internalAppCode, setError, setLoading, callback);
         }
 
     };

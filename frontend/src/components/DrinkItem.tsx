@@ -1,17 +1,21 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, memo } from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet, ToastAndroid } from "react-native";
 import { Drink, DrinkSizes, MainScreenContext, OrderItemType } from '../contexts/MainScreenContext';
 import showToast from "../utils/showToast";
 
 type Props = {
   drink: Drink;
+  onAddToOrderClick: (drinkId: number, size: number) => void;
 };
 
 
-const DrinkItem = ({ drink }: Props) => {
+const DrinkItem = ({ drink, onAddToOrderClick }: Props) => {
 
-  const { addOrderItem } = useContext(MainScreenContext);
+  console.log(`DrinkItem ${drink.id}}- render`);
+
+  // const { addOrderItem } = useContext(MainScreenContext);
   const [selected, setSelected] = useState(1)
+
   const drinkSizePrices = [
     {
       size: 330,
@@ -26,11 +30,6 @@ const DrinkItem = ({ drink }: Props) => {
       price: drink.smallSizePrice
     }
   ]
-
-  const onAddToOrderClick = (drinkId: number, size: number) => {
-    addOrderItem(drinkId, OrderItemType.DRINK, size);
-    showToast("Dodano do zamówienia", ToastAndroid.SHORT);
-  }
 
   const renderSizes = () => {
     return (
@@ -67,7 +66,6 @@ const DrinkItem = ({ drink }: Props) => {
   );
 };
 
-export default DrinkItem;
 
 const styles = StyleSheet.create({
   container: {
@@ -133,3 +131,5 @@ const styles = StyleSheet.create({
     fontSize: 13
   }
 });
+
+export default memo(DrinkItem);

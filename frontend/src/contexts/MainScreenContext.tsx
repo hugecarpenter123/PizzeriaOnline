@@ -1,9 +1,10 @@
-import React, { useState, createContext, useEffect, useContext, ReactNode } from "react"
+import React, { useState, createContext, useEffect, useContext, ReactNode, useCallback, useMemo } from "react"
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AppContext } from "./AppContext";
 import { StackRouter } from "@react-navigation/native";
 import { tokens } from "react-native-paper/lib/typescript/styles/themes/v3/tokens";
 import useFetchUserOrders from "../hooks/useFetchUserOrders";
+import useFetchMenu from "../hooks/useFetchMenu";
 
 export enum OrderItemType {
     PIZZA,
@@ -80,22 +81,6 @@ export type Drink = {
     imageUrl: string,
 };
 
-export type MainScreenContextProps = {
-    cart: Order,
-    clearCart: () => void
-    menu: Menu | undefined,
-    setMenu: (menuData: Menu) => void,
-    addOrderItem: (id: number, size: number, type: OrderItemType) => void,
-    removeOrderItem: (id: number, type: OrderItemType, size: number, removeType: OrderRemoveType) => void,
-    error: string,
-    setError: (error: string) => void,
-    cartItemsCount: number,
-    menuFetched: boolean,
-    setMenuFetched: (value: boolean) => void, //TODO: improve
-    userOrders: UserOrder[],
-    setUserOrders: (data: UserOrder[]) => void,
-};
-
 // USER ORDER ==========================================================
 type UserOrderPizza = {
     imageUrl: string,
@@ -116,7 +101,7 @@ export type OrderType = "DELIVERY" | "PICKUP";
 export type OrderStatus = "PENDING" | "IN_PROGESS" | "COMPLETED" | "CANCELLED";
 
 export type UserOrder = {
-    order_id: number,
+    orderId: number,
     orderedPizzas: UserOrderPizza[],
     orderedDrinks: UserOrderDrink[],
     ordererName: string,
@@ -137,17 +122,29 @@ export type Props = {
 
 
 // todo: PROBABLY SWTICH TO REDUCE FUNCTION
-
 export const MainScreenContext = createContext<MainScreenContextProps>({} as MainScreenContextProps);
 
+export type MainScreenContextProps = {
+    cart: Order,
+    clearCart: () => void
+    menu: Menu | undefined,
+    setMenu: React.Dispatch<React.SetStateAction<Menu | undefined>>
+    addOrderItem: (id: number, size: number, type: OrderItemType) => void,
+    removeOrderItem: (id: number, type: OrderItemType, size: number, removeType: OrderRemoveType) => void,
+    cartItemsCount: number,
+    userOrders: UserOrder[] | undefined,
+    setUserOrders: React.Dispatch<React.SetStateAction<UserOrder[] | undefined>>
+};
+
 const MainScreenContextProvider = ({ children }: Props) => {
+
+    console.log("MainScreenContextProvider render")
+
     const [cart, setCart] = useState<Order>({ orderedPizzaList: [] as orderedPizza[], orderedDrinkList: [] as orderedDrink[] })
     const [cartFetched, setCartFetched] = useState<boolean>(false);
-    const [menu, setMenu] = useState<Menu | undefined>(undefined);
-    const [menuFetched, setMenuFetched] = useState<boolean>(false); // questionable
-    const [error, setError] = useState<string>('');
+    const [menu, setMenu] = useState<undefined | Menu>(undefined);
+    const [userOrders, setUserOrders] = useState<undefined | UserOrder[]>(undefined);
     const [cartItemsCount, setCartItemsCount] = useState(0);
-    const [userOrders, setUserOrders] = useState([] as UserOrder[])
 
     useEffect(() => {
         // can be more optimized, but for now it recalculates all
@@ -159,21 +156,24 @@ const MainScreenContextProvider = ({ children }: Props) => {
         }
     }, [cart])
 
+    // MAIN USE EFFECT
     useEffect(() => {
-        const loadDataFromStorage = async () => {
-            console.log("Fetch \"cart\" from AsyncStorage");
-            try {
-                const storedCartContent = await AsyncStorage.getItem("cart");
-                if (storedCartContent) {
-                    setCart(JSON.parse(storedCartContent));
-                }
-                setCartFetched(true);            } catch (error) {
-                console.error("Error loading cart data from storage:", error);
-            }
-        };
-
         loadDataFromStorage();
     }, []);
+
+
+    const loadDataFromStorage = async () => {
+        console.log("Fetch \"cart\" from AsyncStorage");
+        try {
+            const storedCartContent = await AsyncStorage.getItem("cart");
+            if (storedCartContent) {
+                setCart(JSON.parse(storedCartContent));
+            }
+            setCartFetched(true);
+        } catch (error) {
+            console.error("Error loading cart data from storage:", error);
+        }
+    };
 
     const saveDataToStorage = async () => {
         console.log("Update AsyncStorage with \"cart\"");
@@ -200,6 +200,8 @@ const MainScreenContextProvider = ({ children }: Props) => {
 
     const addPizzaOrder = (pizzaId: number, size: number) => {
         setCart((prevCart) => {
+            console.log("prevCart is:")
+            console.log(prevCart);
             const updatedCart = { ...prevCart };
             let pizzaQuantityUpdated = false;
 
@@ -240,85 +242,93 @@ const MainScreenContextProvider = ({ children }: Props) => {
         })
     }
 
-    const addOrderItem = (id: number, size: number, type: OrderItemType) => {
-        if (type === OrderItemType.PIZZA) {
-            console.log("type is Pizza: should add pizza to cart")
-            addPizzaOrder(id, size)
-        } else {
-            console.log("type is Drink: should add drink to cart")
-            addDrinkOrder(id, size)
-        }
-    }
+    const addOrderItem = useCallback(
+        (id: number, size: number, type: OrderItemType) => {
+            if (type === OrderItemType.PIZZA) {
+                console.log("type is Pizza: should add pizza to cart")
+                addPizzaOrder(id, size)
+            } else {
+                console.log("type is Drink: should add drink to cart")
+                addDrinkOrder(id, size)
+            }
+        },
+        []
+    )
 
-    const removeOrderItem = (id: number, type: OrderItemType, size: number, removeType: OrderRemoveType) => {
-        setCart((prevCart) => {
-            const updatedCart = { ...prevCart }
-            // if order type is pizza
-            if (type == OrderItemType.PIZZA) {
-                // grab reference of the index of the array
-                const indexToUpdate = updatedCart.orderedPizzaList.findIndex((x) => x.pizzaId == id && x.size == size);
+    const removeOrderItem = useCallback(
+        (id: number, type: OrderItemType, size: number, removeType: OrderRemoveType) => {
+            setCart((prevCart) => {
+                console.log("------------ Prev Cart --------------")
+                console.log([prevCart])
+                const updatedCart = { ...prevCart }
+                // if order type is pizza
+                if (type == OrderItemType.PIZZA) {
+                    // grab reference of the index of the array
+                    const indexToUpdate = updatedCart.orderedPizzaList.findIndex((x) => x.pizzaId == id && x.size == size);
 
-                // remove only single item
-                if (removeType === OrderRemoveType.SINGLE) {
-                    // grab reference to the item
-                    const itemToUpdate = updatedCart.orderedPizzaList[indexToUpdate];
+                    // remove only single item
+                    if (removeType === OrderRemoveType.SINGLE) {
+                        // grab reference to the item
+                        const itemToUpdate = updatedCart.orderedPizzaList[indexToUpdate];
 
-                    // quantity > 1 ? decrease : remove whole item
-                    if (itemToUpdate.quantity > 1) {
-                        updatedCart.orderedPizzaList[indexToUpdate].quantity--;
-                    } else {
+                        // quantity > 1 ? decrease : remove whole item
+                        if (itemToUpdate.quantity > 1) {
+                            updatedCart.orderedPizzaList[indexToUpdate].quantity--;
+                        } else {
+                            updatedCart.orderedPizzaList.splice(indexToUpdate, 1);
+                        }
+                    } else if (removeType === OrderRemoveType.ALL) {
                         updatedCart.orderedPizzaList.splice(indexToUpdate, 1);
                     }
-                } else if (removeType === OrderRemoveType.ALL) {
-                    updatedCart.orderedPizzaList.splice(indexToUpdate, 1);
                 }
-            }
-            // order type is Drink
-            else {
-                // grab reference of the index of the array
-                const indexToUpdate = updatedCart.orderedDrinkList.findIndex((x) => x.drinkId == id && x.size == size);
+                // order type is Drink
+                else {
+                    // grab reference of the index of the array
+                    const indexToUpdate = updatedCart.orderedDrinkList.findIndex((x) => x.drinkId == id && x.size == size);
 
-                // remove only single item
-                if (removeType === OrderRemoveType.SINGLE) {
-                    // grab reference to the item
-                    const itemToUpdate = updatedCart.orderedDrinkList[indexToUpdate];
+                    // remove only single item
+                    if (removeType === OrderRemoveType.SINGLE) {
+                        // grab reference to the item
+                        const itemToUpdate = updatedCart.orderedDrinkList[indexToUpdate];
 
-                    // quantity > 1 ? decrease : remove whole item
-                    if (itemToUpdate.quantity > 1) {
-                        updatedCart.orderedDrinkList[indexToUpdate].quantity--;
-                    } else {
+                        // quantity > 1 ? decrease : remove whole item
+                        if (itemToUpdate.quantity > 1) {
+                            updatedCart.orderedDrinkList[indexToUpdate].quantity--;
+                        } else {
+                            updatedCart.orderedDrinkList.splice(indexToUpdate, 1);
+                        }
+                    } else if (removeType === OrderRemoveType.ALL) {
                         updatedCart.orderedDrinkList.splice(indexToUpdate, 1);
                     }
-                } else if (removeType === OrderRemoveType.ALL) {
-                    updatedCart.orderedDrinkList.splice(indexToUpdate, 1);
                 }
-            }
-            return updatedCart;
-        })
-    }
+                return updatedCart;
+            })
+        },
+        []
+    )
 
-    const clearCart = () => {
-        setCart({ orderedPizzaList: [] as orderedPizza[], orderedDrinkList: [] as orderedDrink[] })
-    }
+    const clearCart = useCallback(
+        () => {
+            setCart({ orderedPizzaList: [] as orderedPizza[], orderedDrinkList: [] as orderedDrink[] })
+        },
+        []
+    )
+
+    const contextValue = useMemo(() => ({
+        cart,
+        clearCart,
+        cartItemsCount,
+        menu,
+        setMenu,
+        addOrderItem,
+        removeOrderItem,
+        userOrders,
+        setUserOrders,
+    }), [cart, cartItemsCount, menu, userOrders]);
+
 
     return (
-        <MainScreenContext.Provider
-            value={{
-                cart,
-                clearCart,
-                cartItemsCount,
-                menu,
-                setMenu,
-                addOrderItem,
-                removeOrderItem,
-                error,
-                setError,
-                menuFetched,
-                setMenuFetched,
-                userOrders,
-                setUserOrders,
-            }}
-        >
+        <MainScreenContext.Provider value={contextValue}>
             {children}
         </MainScreenContext.Provider>
     )

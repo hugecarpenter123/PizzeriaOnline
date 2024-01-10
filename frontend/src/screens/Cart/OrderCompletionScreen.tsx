@@ -10,7 +10,6 @@ import { AppContext } from '../../contexts/AppContext';
 import ContactForm, { ContactProps } from '../../components/ContactForm';
 import useCreateOrder from '../../hooks/useCreateOrder';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import useExchangeTokens from '../../hooks/useExchangeTokens';
 import { commonStyles } from '../../utils/StaticAppInfo';
 
 export enum OrderType {
@@ -39,12 +38,12 @@ export type OrderPayloadModel = {
 type Props = NativeStackScreenProps<CartParamList, 'OrderCompletion'>
 
 const OrderCompletionScreen = ({ route, navigation }: Props) => {
+    console.log("OrderCompletionScreen render")
     const { loading, success, addOrder } = useCreateOrder();
     const { token, userDetails } = useContext(AppContext);
     const { cart } = useContext(MainScreenContext);
     const [addressData, setAddressData] = useState<AddressProps>({} as AddressProps)
     const [contactData, setContactData] = useState<ContactProps>({} as ContactProps)
-    const { exchangeTokens, loading: tokenLoading } = useExchangeTokens();
 
     const colorScheme = useColorScheme();
     const textColor = colorScheme === 'dark' ? commonStyles.darkThemeText : commonStyles.lightThemeText;
@@ -151,10 +150,6 @@ const OrderCompletionScreen = ({ route, navigation }: Props) => {
             orderType: deliveryOptionChecked,
         }
         addOrder(payload);
-    }
-
-    const onRefreshTokenPressed = () => {
-        exchangeTokens();
     }
 
     return (

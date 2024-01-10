@@ -21,6 +21,9 @@ export enum InternalAppCode {
     NO_USER_PERMS = 'NO_USER_PERMS',
     NO_ADMIN_PERMS = 'NO_ADMIN_PERMS',
     BAD_CREDENTIALS = 'BAD_CREDENTIALS',
+    REQUEST_TIMED_OUT = 'REQUEST_TIMED_OUT',
+    UNDEFINED_ERROR = "UNDEFINED_ERROR",
+    BAD_JSON_RESPONSE = "BAD_JSON_RESPONSE",
 }
 
 export const commonStyles = StyleSheet.create({

@@ -12,7 +12,7 @@ export enum LoginState {
 
 type Props = {
     loginState: LoginState
-    navigation: NativeStackNavigationProp<RootStackParamList, 'MainScreen'>
+    navigation: NativeStackNavigationProp<RootStackParamList, 'MainScreenTabs'>
 }
 
 
