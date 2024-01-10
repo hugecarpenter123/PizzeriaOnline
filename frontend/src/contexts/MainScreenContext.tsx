@@ -81,20 +81,6 @@ export type Drink = {
     imageUrl: string,
 };
 
-export type MainScreenContextProps = {
-    cart: Order,
-    clearCart: () => void
-    menu: Menu | undefined,
-    fetchMenu: () => Promise<void>,
-    addOrderItem: (id: number, size: number, type: OrderItemType) => void,
-    removeOrderItem: (id: number, type: OrderItemType, size: number, removeType: OrderRemoveType) => void,
-    fetchMenuError: null | string,
-    cartItemsCount: number,
-    fetchMenuLoading: boolean,
-    userOrders: UserOrder[] | undefined,
-    setUserOrders: React.Dispatch<React.SetStateAction<UserOrder[] | undefined>>
-};
-
 // USER ORDER ==========================================================
 type UserOrderPizza = {
     imageUrl: string,
@@ -136,8 +122,19 @@ export type Props = {
 
 
 // todo: PROBABLY SWTICH TO REDUCE FUNCTION
-
 export const MainScreenContext = createContext<MainScreenContextProps>({} as MainScreenContextProps);
+
+export type MainScreenContextProps = {
+    cart: Order,
+    clearCart: () => void
+    menu: Menu | undefined,
+    setMenu: React.Dispatch<React.SetStateAction<Menu | undefined>>
+    addOrderItem: (id: number, size: number, type: OrderItemType) => void,
+    removeOrderItem: (id: number, type: OrderItemType, size: number, removeType: OrderRemoveType) => void,
+    cartItemsCount: number,
+    userOrders: UserOrder[] | undefined,
+    setUserOrders: React.Dispatch<React.SetStateAction<UserOrder[] | undefined>>
+};
 
 const MainScreenContextProvider = ({ children }: Props) => {
 
@@ -145,11 +142,8 @@ const MainScreenContextProvider = ({ children }: Props) => {
 
     const [cart, setCart] = useState<Order>({ orderedPizzaList: [] as orderedPizza[], orderedDrinkList: [] as orderedDrink[] })
     const [cartFetched, setCartFetched] = useState<boolean>(false);
-    const { loading: fetchMenuLoading, error: fetchMenuError, menu, fetchMenu } = useFetchMenu();
-    const { fetchUserOrders } = useFetchUserOrders();
+    const [menu, setMenu] = useState<undefined | Menu>(undefined);
     const [userOrders, setUserOrders] = useState<undefined | UserOrder[]>(undefined);
-    const { token } = useContext(AppContext);
-
     const [cartItemsCount, setCartItemsCount] = useState(0);
 
     useEffect(() => {
@@ -164,15 +158,6 @@ const MainScreenContextProvider = ({ children }: Props) => {
 
     // MAIN USE EFFECT
     useEffect(() => {
-        // load menu
-        fetchMenu();
-
-        // conditionally if user is logged in, fetch info about his orders
-        // if (token) {
-        //     fetchUserOrders();
-        // }
-
-        // fetch cached info about his cart
         loadDataFromStorage();
     }, []);
 
@@ -334,14 +319,12 @@ const MainScreenContextProvider = ({ children }: Props) => {
         clearCart,
         cartItemsCount,
         menu,
+        setMenu,
         addOrderItem,
         removeOrderItem,
-        fetchMenuError,
-        fetchMenuLoading,
         userOrders,
-        fetchMenu,
         setUserOrders,
-    }), [cart, cartItemsCount, menu, fetchMenuError, fetchMenuLoading, userOrders]);
+    }), [cart, cartItemsCount, menu, userOrders]);
 
 
     return (

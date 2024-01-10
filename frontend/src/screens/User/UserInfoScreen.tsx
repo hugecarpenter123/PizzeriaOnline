@@ -1,15 +1,17 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { SafeAreaView, Text, StyleSheet, View, ScrollView, StatusBar } from 'react-native';
+import React, { useState, useContext, useEffect, useMemo } from 'react';
+import { SafeAreaView, Text, StyleSheet, View, ScrollView, StatusBar, RefreshControl } from 'react-native';
 import { AppContext, UserDetails } from '../../contexts/AppContext';
 import { useFocusEffect } from '@react-navigation/native';
 import EditField from '../../components/EditField';
 import Validation from '../../utils/validation';
 import AddressEditFields from '../../components/AddressEditFields';
-import AccountEditFields from '../../components/AccountEditFields';
+import PasswordsEditFields from '../../components/PasswordsEditFields';
 import UserProfilePicture from '../../components/UserProfilePicture';
 import DateEditField from '../../components/DateEditField';
 import UserInfoBottom from '../../components/UserInfoBottom';
 import LoadingIndicator from '../../components/LoadingIndicator';
+import useFetchUserDetails from '../../hooks/useFetchUserDetails';
+import PersonalEditFields from '../../components/PersonalEditFields';
 
 type Fields = {
     [key: string]: string | null,
@@ -26,49 +28,8 @@ type Fields = {
 
 export default function UserInfoScreen() {
     console.log("UserInfoScreen render")
-    const { userDetails, setUserDetails } = useContext(AppContext);
     const [loading, setLoading] = useState<boolean>(false);
-
-    const fieldKeys = ["name", "surname", "dateOfBirth", "phoneNumber", "email"]
-    const fieldNames = ["Imię", "Nazwisko", "Data urodzenia", "Numer telefonu", "Email"];
-    const validationMethods = [
-        (value: string) => Validation.isNameValid(value),
-        (value: string) => Validation.isSurnameValid(value),
-        (value: string) => Validation.isDateOfBirthValid(value),
-        (value: string) => Validation.isPhoneValid(value),
-        (value: string) => Validation.isEmailValid(value),
-    ]
-
-
-    /**
-     * Funciton renders Views that display current value with edit button to send post request and change the given piece of data
-     * 
-     * @returns 
-     */
-    const PersonalEditFields: React.FC = () => {
-        if (userDetails) {
-            return fieldKeys.map((fieldName, index) => {
-                if (fieldName === 'dateOfBirth') {
-                    return <DateEditField
-                        key={index}
-                        field={fieldName}
-                        label={fieldNames[index]}
-                        value={userDetails[fieldName]}
-                        validation={validationMethods[index]}
-                        setLoading={setLoading} />
-                }
-                return <EditField
-                    key={index}
-                    field={fieldName}
-                    label={fieldNames[index]}
-                    value={userDetails[fieldName]}
-                    validation={validationMethods[index]}
-                    setLoading={setLoading} />
-            })
-        } else {
-            // TODO: handle situation when no userDetails available (there should never be such situation)
-        }
-    }
+    const { fetchUserDetails, loading: fetchUserDetailsLoading, error } = useFetchUserDetails();
 
     const Separator: React.FC = () => {
         return <View style={
@@ -83,17 +44,21 @@ export default function UserInfoScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                refreshControl={<RefreshControl
+                    refreshing={loading || fetchUserDetailsLoading}
+                    onRefresh={fetchUserDetails} />}
+            >
                 <UserProfilePicture imageSource={null} />
-                <PersonalEditFields />
+                <PersonalEditFields setLoading={setLoading} />
                 <Separator />
-                <AddressEditFields setLoading={(loading) => setLoading(loading)} />
+                <AddressEditFields setLoading={setLoading} />
                 <Separator />
-                <AccountEditFields setLoading={(loading) => setLoading(loading)} />
+                <PasswordsEditFields setLoading={setLoading} />
                 <Separator />
                 <UserInfoBottom />
             </ScrollView>
-            {loading && <LoadingIndicator />}
         </SafeAreaView>
     );
 }

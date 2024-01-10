@@ -5,8 +5,10 @@ import { AppContext, UserDetails, UserReview } from '../contexts/AppContext';
 import useFetchUserOrders from './useFetchUserOrders';
 import { CommonActions, NavigationProp, useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../screens/AppStacks';
-import useErrorInterceptor from './UseErrorInterceptor';
+import useErrorInterceptor from './useErrorInterceptor';
 import { InternalAppCode } from '../utils/StaticAppInfo';
+import FetchError from '../utils/Errors/FetchError';
+import timeout from '../utils/Timeout';
 
 type DeleteOrderHookResult = {
     loading: boolean,
@@ -21,18 +23,7 @@ const useDeleteOrder = (): DeleteOrderHookResult => {
     const [error, setError] = useState<string | null>(null);
     const { token, logout } = useContext(AppContext);
     const { fetchUserOrders } = useFetchUserOrders();
-
     const { errorInterceptor } = useErrorInterceptor();
-    const internalAppCodeRef = useRef<InternalAppCode | null>(null);
-    const dataCopyRef = useRef<number | null>(null);
-
-    useEffect(() => {
-        if (internalAppCodeRef.current === InternalAppCode.ACCESS_TOKEN_EXPIRED) {
-            deleteOrder(dataCopyRef.current as number);
-            internalAppCodeRef.current = null;
-            dataCopyRef.current = null;
-        }
-    }, [token])
 
     useEffect(() => {
         if (error) {
@@ -48,41 +39,53 @@ const useDeleteOrder = (): DeleteOrderHookResult => {
         fetchUserOrders();
     }
 
-    const deleteOrder = async (id: number): Promise<void> => {
+    const deleteOrder = async (id: number, newToken?: string): Promise<void> => {
+        let internalAppCode = null;
+        let errorMessage = null;
+
         try {
-            dataCopyRef.current = id;
             setLoading(true);
             setError(null);
+
+            const { timeoutId, controller } = timeout();
+
             const url = `${ApiUrls.CANCEL_ORDER}/${id}`
             const response = await fetch(url, {
                 method: 'DELETE',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                }
+                    'Authorization': `Bearer ${newToken ? newToken : token}`,
+                },
+                signal: controller.signal,
             });
 
+            clearTimeout(timeoutId);
+
             if (!response.ok) {
-                // Handle error response with status code 4xx
-                const errorMessage = response?.headers?.get('Content-Type')?.includes('application/json')
-                    ? await response.json().then((data) => data.message || data)
-                    : response.status;
-                throw new Error(errorMessage);
+                const containsJson = response?.headers?.get('Content-Type')?.includes('application/json');
+                const body = containsJson ? await response.json() : null;
+                errorMessage = containsJson ? body.message || body : response.status;
+                internalAppCode = containsJson ? body.internalAppCode : InternalAppCode.UNDEFINED_ERROR
+                throw new FetchError({ errorMessage, internalAppCode });
             }
 
             // here reponse is ok
             console.log("Order cancelled seccessfully!");
             setSuccess(true);
-        } catch (error: any) {
-            console.log("catch block: " + error)
+            setLoading(false);
 
-            if (internalAppCodeRef.current) {
-                errorInterceptor(internalAppCodeRef.current, setError);
-            }
-            else {
-                setError("Wydarzył się nieoczekiwany błąd, spróbuj ponownie później")
-            }
-        } finally {
-            if (internalAppCodeRef.current !== InternalAppCode.ACCESS_TOKEN_EXPIRED) setLoading(false);
+        } catch (error: any) {
+            const internalAppCode = error instanceof FetchError
+                ? error.internalAppCode
+                : error.name === "AbortError" ? InternalAppCode.REQUEST_TIMED_OUT : InternalAppCode.UNDEFINED_ERROR;
+
+            const errorMessage = error instanceof FetchError
+                ? error.message
+                : error.name === "AbortError" ? "Request został anulowany przez timeout" : `Niezdefiniowany błąd: ${error}`;
+
+            console.error(`InernalAppCode: ${internalAppCode}`);
+            console.error(`deleteOrder error: ${errorMessage}`);
+            const callback = (newToken: string) => deleteOrder(id, newToken);
+            errorInterceptor(internalAppCode, setError, setLoading, callback);
         }
 
     };

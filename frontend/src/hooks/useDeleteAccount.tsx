@@ -1,13 +1,12 @@
-import React, { useState, useEffect, useContext, useRef } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import showToast from '../utils/showToast';
 import { ApiUrls } from '../utils/urls';
-import { AppContext, UserDetails, UserReview } from '../contexts/AppContext';
-import useFetchUserOrders from './useFetchUserOrders';
-import { CommonActions, NavigationProp, useNavigation } from '@react-navigation/native';
-import { RootStackParamList } from '../screens/AppStacks';
+import { AppContext } from '../contexts/AppContext';
 import { InternalAppCode } from '../utils/StaticAppInfo';
 import useForceLogout from './useForceLogout';
-import useErrorInterceptor from './UseErrorInterceptor';
+import useErrorInterceptor from './useErrorInterceptor';
+import FetchError from '../utils/Errors/FetchError';
+import timeout from '../utils/Timeout';
 
 type DeleteAccountHookResult = {
     loading: boolean,
@@ -23,14 +22,6 @@ const useDeleteAccount = (): DeleteAccountHookResult => {
     const { token } = useContext(AppContext);
 
     const { errorInterceptor } = useErrorInterceptor();
-    const internalAppCodeRef = useRef<InternalAppCode | null>(null);
-
-    useEffect(() => {
-        if (internalAppCodeRef.current === InternalAppCode.ACCESS_TOKEN_EXPIRED) {
-            deleteAccount();
-            internalAppCodeRef.current = null;
-        }
-    }, [token])
 
     useEffect(() => {
         if (error) {
@@ -42,49 +33,53 @@ const useDeleteAccount = (): DeleteAccountHookResult => {
         }
     }, [error, success]);
 
-    const deleteAccount = async (): Promise<void> => {
+    const deleteAccount = async (newToken?: string): Promise<void> => {
+        let internalAppCode = null;
+        let errorMessage = null;
+
         try {
             setLoading(true);
             setError(null);
-            const url = `${ApiUrls.DELETE_USER}`
+
+            const { timeoutId, controller } = timeout();
+
+            const url = ApiUrls.DELETE_USER;
             const response = await fetch(url, {
                 method: 'DELETE',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                }
+                    'Authorization': `Bearer ${newToken ? newToken : token}`,
+                },
+                signal: controller.signal,
             });
 
+            clearTimeout(timeoutId);
+
+
             if (!response.ok) {
-                // Handle error response with status code 4xx
                 const containsJson = response?.headers?.get('Content-Type')?.includes('application/json');
                 const body = containsJson ? await response.json() : null;
-
-                const errorMessage = containsJson
-                    ? body.message || body
-                    : response.status;
-
-                const internalCode = containsJson
-                    ? body.internalAppCode
-                    : null
-
-                internalAppCodeRef.current = internalCode;
-                throw new Error(errorMessage);
+                errorMessage = containsJson ? body.message || body : response.status;
+                internalAppCode = containsJson ? body.internalAppCode : InternalAppCode.UNDEFINED_ERROR
+                throw new FetchError({ errorMessage, internalAppCode });
             }
 
             // here reponse is ok
             console.log("User account deleted seccessfully!");
             setSuccess(true);
-        } catch (error: any) {
-            console.log("catch block: " + error)
+            setLoading(false);
 
-            if (internalAppCodeRef.current) {
-                errorInterceptor(internalAppCodeRef.current, setError);
-            }
-            else {
-                setError("Wydarzył się nieoczekiwany błąd, spróbuj ponownie później")
-            }
-        } finally {
-            if (internalAppCodeRef.current !== InternalAppCode.ACCESS_TOKEN_EXPIRED) setLoading(false);
+        } catch (error: any) {
+            const internalAppCode = error instanceof FetchError
+                ? error.internalAppCode
+                : error.name === "AbortError" ? InternalAppCode.REQUEST_TIMED_OUT : InternalAppCode.UNDEFINED_ERROR;
+
+            const errorMessage = error instanceof FetchError
+                ? error.message
+                : error.name === "AbortError" ? "Request został anulowany przez timeout" : `Niezdefiniowany błąd: ${error}`;
+
+            console.error(`InernalAppCode: ${internalAppCode}`);
+            console.error(`deleteAccount error: ${errorMessage}`);
+            errorInterceptor(internalAppCode, setError, setLoading, deleteAccount);
         }
 
     };
