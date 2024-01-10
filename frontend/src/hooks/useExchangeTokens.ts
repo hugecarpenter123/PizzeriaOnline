@@ -1,7 +1,7 @@
 import React, { useState, useContext } from "react";
 import { ApiUrls } from "../utils/urls";
 import { AppContext } from "../contexts/AppContext";
-import ForceLogout from "../utils/ForceLogout";
+import useForceLogout from "./useForceLogout";
 import { InternalAppCode } from "../utils/StaticAppInfo";
 
 type TokenExchangeHookResult = {
@@ -60,8 +60,7 @@ const useExchangeTokens = (): TokenExchangeHookResult => {
             else {
                 const responseData = await response.json();
                 // Check if the response contains the expected "token" & "userDetails" key
-                if (!responseData.hasOwnProperty('token') || !responseData.hasOwnProperty('refreshToken')
-                    || !responseData.hasOwnProperty('refreshToken')) {
+                if (!responseData.hasOwnProperty('token') || !responseData.hasOwnProperty('refreshToken')) {
                     throw new Error('Invalid response: no data with required keys.');
                 } else {
                     const newToken = responseData.token;
@@ -76,7 +75,7 @@ const useExchangeTokens = (): TokenExchangeHookResult => {
 
             // if refresh token is not valid somehow, force logout
             if (internalAppCode === InternalAppCode.BAD_REFRESH_TOKEN || internalAppCode === InternalAppCode.REFRESH_TOKEN_EXPIRED) {
-                ForceLogout();
+                useForceLogout();
                 setError("Sesja wygasła, proszę zaloguj się ponownie");
             } 
             // if error is of another kind - display for now

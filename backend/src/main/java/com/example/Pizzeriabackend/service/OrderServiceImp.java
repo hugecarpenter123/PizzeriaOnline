@@ -79,7 +79,6 @@ public class OrderServiceImp implements OrderService {
             throw new GeneralBadRequestException("Order information are filled improperly");
         }
 
-        // get list of orders and check validate them later
         List<OrderedDrinkModel> orderedDrinkModels = createOrderRequest.getOrderedDrinks();
         List<OrderedPizzaModel> orderedPizzaModels = createOrderRequest.getOrderedPizzas();
 
