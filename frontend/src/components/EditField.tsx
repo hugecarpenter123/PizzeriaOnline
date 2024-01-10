@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
 import useUpdateUser, { UserModel } from '../hooks/useUpdateUser';
 import { commonStyles } from '../utils/StaticAppInfo';
+import { useIsFocused } from '@react-navigation/native';
+import { isConstructorTypeNode } from 'typescript';
 
 type EditFieldProps = {
     field: string,
@@ -11,15 +13,15 @@ type EditFieldProps = {
     setLoading: (loading: boolean) => void,
 }
 
-export default function EditField({ field, label, value, validation, setLoading }: EditFieldProps) {
-
+const EditField = ({ field, label, value, validation, setLoading }: EditFieldProps) => {
     const [fieldValue, setFieldValue] = useState<string>(value)
     const [error, setError] = useState<string | null>(null);
-    const { update, loading } = useUpdateUser();
+    const { update, loading, error: updateError } = useUpdateUser();
+    const isFocused = useIsFocused();
 
     const colorScheme = useColorScheme();
     const textColor = colorScheme === 'dark' ? commonStyles.darkThemeText : commonStyles.lightThemeText;
-    
+
     useEffect(() => {
         setError(validation(fieldValue))
     }, [fieldValue])
@@ -30,9 +32,15 @@ export default function EditField({ field, label, value, validation, setLoading 
     }
 
     useEffect(() => {
-        console.log("loading state: " + loading)
         setLoading(loading);
-    }, [loading]);
+    }, [loading])
+
+    useEffect(() => {
+        if (updateError || !isFocused) {
+            setFieldValue(value);
+            setError(null);
+        }
+    }, [updateError, isFocused])
 
     return (
         <View style={styles.fieldContainer}>
@@ -44,9 +52,9 @@ export default function EditField({ field, label, value, validation, setLoading 
                     value={fieldValue}
                     onChangeText={setFieldValue}
                 />
-                {<TouchableOpacity style={styles.editButton} onPress={handleEdit}>
+                <TouchableOpacity style={styles.editButton} onPress={handleEdit}>
                     <Text style={styles.editButtonText}>Edit</Text>
-                </TouchableOpacity>}
+                </TouchableOpacity>
             </View>
         </View>
     );
@@ -95,3 +103,5 @@ const styles = StyleSheet.create({
         marginVertical: 5,
     },
 });
+
+export default memo(EditField);

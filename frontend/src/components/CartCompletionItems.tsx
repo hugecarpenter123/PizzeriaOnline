@@ -1,6 +1,5 @@
 import React, { useContext } from 'react'
 import { View, SafeAreaView, Image, StyleSheet, Text } from 'react-native'
-import MainScreen from '../screens/MainScreen'
 import { MainScreenContext } from '../contexts/MainScreenContext'
 
 type Props = {

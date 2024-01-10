@@ -7,7 +7,10 @@ import { OrderPayloadModel } from '../screens/Cart/OrderCompletionScreen';
 import { MainScreenContext } from '../contexts/MainScreenContext';
 import { InternalAppCode } from '../utils/StaticAppInfo';
 import useExchangeTokens from './useExchangeTokens';
-import useErrorInterceptor from './UseErrorInterceptor';
+import useErrorInterceptor from './useErrorInterceptor';
+import FetchError from '../utils/Errors/FetchError';
+import timeout from '../utils/Timeout';
+import { createAbstractBuilder } from 'typescript';
 
 type PostOrderHookResult = {
     loading: boolean,
@@ -25,10 +28,6 @@ const useCreateOrder = (): PostOrderHookResult => {
     const { fetchUserDetails: updateUserDetails } = useFetchUserDetails();
     const { errorInterceptor } = useErrorInterceptor();
 
-
-    const internalAppCodeRef = useRef<InternalAppCode | null>(null);
-    const dataCopyRef = useRef<OrderPayloadModel | null>(null);
-
     // handle error and success
     useEffect(() => {
         if (error) {
@@ -39,83 +38,71 @@ const useCreateOrder = (): PostOrderHookResult => {
         }
     }, [error, success]);
 
-    // retry mechanism
-    useEffect(() => {
-        if (internalAppCodeRef.current && dataCopyRef.current) {
-            // console.log(`now retry function should happen with this token: \n${token}\ncode: ${internalAppCodeRef.current}\ndataCopy: ${JSON.stringify(dataCopyRef.current)}`);
-            addOrder(dataCopyRef.current)
-            dataCopyRef.current = null;
-            internalAppCodeRef.current = null;
-        } else {
-            console.log("Token changed but no retry");
-        }
-    }, [token])
-
     const updateContext = () => {
         // update userDetails - which contain Orders
         updateUserDetails();
         clearCart();
     }
 
-    const addOrder = async (data: OrderPayloadModel): Promise<void> => {
+    const addOrder = async (data: OrderPayloadModel, newToken?: string): Promise<void> => {
+        let internalAppCode = null;
+        let errorMessage = null;
+
         try {
-            dataCopyRef.current = data;
             setLoading(true);
-            setError(null);
-            
-            const url = `${ApiUrls.POST_ORDER}`;
+            setError(null)
+            const { timeoutId, controller } = timeout();
 
-            const headers: { [key: string]: string } = {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            };
-
-            if (token) {
-                headers['Authorization'] = `Bearer ${token}`;
-            }
-
+            const url = ApiUrls.POST_ORDER;
             const response = await fetch(url, {
                 method: 'POST',
-                headers: headers,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${newToken ? newToken : token}`,
+                },
                 body: JSON.stringify(data),
+                signal: controller.signal,
             });
 
-            console.log("response: ")
-            console.log(response);
+            clearTimeout(timeoutId);
 
             if (!response.ok) {
                 // Handle error response with status code 4xx
                 const containsJson = response?.headers?.get('Content-Type')?.includes('application/json');
                 const body = containsJson ? await response.json() : null;
 
-                const errorMessage = containsJson
+                errorMessage = containsJson
                     ? body.message || body
                     : response.status;
 
-                const internalCode = containsJson
+                internalAppCode = containsJson
                     ? body.internalAppCode
-                    : null
+                    : InternalAppCode.UNDEFINED_ERROR;
 
-                internalAppCodeRef.current = internalCode;
-                throw new Error(errorMessage);
+                internalAppCode = containsJson ? body.internalAppCode : InternalAppCode.UNDEFINED_ERROR
+                throw new FetchError({ errorMessage, internalAppCode });
             }
 
             // here reponse is ok
             console.log("Order added successfully!");
             setSuccess(true);
+            setLoading(false);
             updateContext();
 
         } catch (error: any) {
-            console.error(error.message)
-            if (internalAppCodeRef.current) {
-                errorInterceptor(internalAppCodeRef.current, setError);
-            }
+            const internalAppCode = error instanceof FetchError
+                ? error.internalAppCode
+                : error.name === "AbortError" ? InternalAppCode.REQUEST_TIMED_OUT : InternalAppCode.UNDEFINED_ERROR;
 
-        } finally {
-            // if token needs to be refreshed then loading indicator should keep on spinning
-            if (internalAppCodeRef.current !== InternalAppCode.ACCESS_TOKEN_EXPIRED) {
-                setLoading(false);
-            }
+            const errorMessage = error instanceof FetchError
+                ? error.message
+                : error.name === "AbortError" ? "Request został anulowany przez timeout" : `Niezdefiniowany błąd: ${error}`;
+
+            console.error(`InernalAppCode: ${internalAppCode}`);
+            console.error(`createOrder error: ${errorMessage}`);
+            const callback = (newToken: string) => addOrder(data, newToken);
+            errorInterceptor(internalAppCode, setError, setLoading, callback);
         }
 
     };

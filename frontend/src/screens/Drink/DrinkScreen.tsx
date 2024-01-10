@@ -5,10 +5,12 @@ import DrinkItem from "../../components/DrinkItem";
 import { Drink } from "../../contexts/MainScreenContext";
 import { FlatList } from "react-native-gesture-handler";
 import showToast from "../../utils/showToast";
+import useFetchMenu from "../../hooks/useFetchMenu";
 
 const DrinkScreen = () => {
     console.log("DrinkScreen render");
-    const { menu, fetchMenuLoading, fetchMenuError, fetchMenu, addOrderItem } = useContext(MainScreenContext)
+    const { menu, addOrderItem } = useContext(MainScreenContext);
+    const { fetchMenu, loading, error } = useFetchMenu();
 
     const onAddToOrderClick = useCallback(
         (drinkId: number, size: number) => {
@@ -33,7 +35,7 @@ const DrinkScreen = () => {
                 keyExtractor={(_, index) => index.toString()}
                 style={styles.drinkList}
                 ListEmptyComponent={emptyListComponent}
-                refreshControl={<RefreshControl refreshing={fetchMenuLoading && !fetchMenuError} onRefresh={fetchMenu} />}
+                refreshControl={<RefreshControl refreshing={loading && !error} onRefresh={fetchMenu} />}
             />
         </SafeAreaView>
     );

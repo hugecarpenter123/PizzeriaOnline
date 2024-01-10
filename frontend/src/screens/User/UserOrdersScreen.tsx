@@ -8,8 +8,8 @@ import { RefreshControl } from 'react-native-gesture-handler';
 
 export default function UserOrdersScreen() {
     console.log("UserOrdersScreen render")
-    const { userOrders } = useContext(MainScreenContext);
-    const { fetchUserOrders, loading, error } = useFetchUserOrders();
+    // const { userOrders } = useContext(MainScreenContext);
+    const { userOrders, fetchUserOrders, loading, error } = useFetchUserOrders();
 
     useEffect(() => {
         fetchUserOrders();

@@ -8,18 +8,18 @@ import PizzaItem from "../../components/PizzaItem";
 import { PizzaScreenParamList } from "./PizzaScreen";
 import showToast from "../../utils/showToast";
 import { FlatList } from "react-native-gesture-handler";
+import useFetchMenu from "../../hooks/useFetchMenu";
 
 type Props = NativeStackScreenProps<PizzaScreenParamList & RootStackParamList, "PizzaList">
 
 const PizzaList = ({ route, navigation }: Props) => {
     console.log("PizzaList render")
-    const { addOrderItem, menu, fetchMenuError, fetchMenuLoading, fetchMenu } = useContext(MainScreenContext);
-
+    // const { addOrderItem, menu, fetchMenuError, fetchMenuLoading, fetchMenu } = useContext(MainScreenContext);
+    const { addOrderItem, menu } = useContext(MainScreenContext);
+    const { fetchMenu, loading, error } = useFetchMenu();
     useEffect(() => {
-        if (fetchMenuError) {
-            showToast(fetchMenuError, ToastAndroid.LONG);
-        }
-    }, [fetchMenuError])
+        fetchMenu();
+    }, [])
 
     const onRefresh = () => {
         fetchMenu();
@@ -40,12 +40,12 @@ const PizzaList = ({ route, navigation }: Props) => {
 
     return (
         <SafeAreaView style={styles.container}>
-            {fetchMenuError && <ErrorMessage text="Check connection or report the error" />}
+            {error && <ErrorMessage text="Check connection or report the error" />}
             <FlatList data={menu?.pizzaList}
                 style={styles.flatList}
                 renderItem={renderPizzaMenuItem}
                 keyExtractor={(_, index) => index.toString()}
-                refreshControl={<RefreshControl refreshing={fetchMenuLoading && !fetchMenuError} onRefresh={onRefresh} />}
+                refreshControl={<RefreshControl refreshing={loading && !error} onRefresh={onRefresh} />}
             />
         </SafeAreaView>
     )

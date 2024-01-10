@@ -1,14 +1,12 @@
-import React, { useState, useEffect, useContext, useRef } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import showToast from '../utils/showToast';
 import { ApiUrls } from '../utils/urls';
-import { AppContext, UserDetails, UserReview } from '../contexts/AppContext';
-import useMenuFetcher from './useMenuFetcher';
-import useUpdateUser from './useUpdateUser';
+import { AppContext } from '../contexts/AppContext';
 import useFetchUserDetails from './useFetchUserDetails';
-import { OrderPayloadModel } from '../screens/Cart/OrderCompletionScreen';
-import { MainScreenContext } from '../contexts/MainScreenContext';
-import useExchangeTokens from './useExchangeTokens';
 import { InternalAppCode } from '../utils/StaticAppInfo';
+import timeout from '../utils/Timeout';
+import FetchError from '../utils/Errors/FetchError';
+import useErrorInterceptor from './useErrorInterceptor';
 
 type PutUserImageRHookResult = {
     loading: boolean,
@@ -23,10 +21,8 @@ const usePutUserImage = (): PutUserImageRHookResult => {
     const [error, setError] = useState<string | null>(null);
     const { token } = useContext(AppContext);
     const { fetchUserDetails: updateUserDetails } = useFetchUserDetails();
-    const { exchangeTokens } = useExchangeTokens();
+    const { errorInterceptor } = useErrorInterceptor();
 
-    const internalAppCodeRef = useRef<InternalAppCode | null>(null);
-    const dataCopyRef = useRef<String | null>(null);
 
     // handle error and success
     useEffect(() => {
@@ -39,17 +35,6 @@ const usePutUserImage = (): PutUserImageRHookResult => {
         }
     }, [error, success]);
 
-    // retry mechanism
-    useEffect(() => {
-        if (internalAppCodeRef.current && dataCopyRef.current) {
-            // console.log(`now retry function should happen with this token: \n${token}\ncode: ${internalAppCodeRef.current}\ndataCopy: ${JSON.stringify(dataCopyRef.current)}`);
-            putImage(dataCopyRef.current)
-            dataCopyRef.current = null;
-            internalAppCodeRef.current = null;
-        } else {
-            console.log("Token changed but no retry");
-        }
-    }, [token])
 
     const updateContext = () => {
         updateUserDetails();
@@ -76,65 +61,55 @@ const usePutUserImage = (): PutUserImageRHookResult => {
         return formData;
     }
 
-    const putImage = async (imageUri: String): Promise<void> => {
+    const putImage = async (imageUri: String, newToken?: string): Promise<void> => {
+        let errorMessage = null;
+        let internalAppCode = null;
         try {
-            dataCopyRef.current = imageUri;
             setLoading(true);
             setError(null);
 
             const url = `${ApiUrls.PUT_USER_IMAGE}`;
-            const headers: { [key: string]: string } = {
-                'Content-Type': 'multipart/form-data',
-            };
-
-            if (token) {
-                headers['Authorization'] = `Bearer ${token}`;
-            }
-
             const formData = prepareFormData(imageUri);
-
+            const { timeoutId, controller } = timeout();
             const response = await fetch(url, {
                 method: 'PUT',
-                headers: headers,
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${newToken ? newToken : token}`,
+                },
                 body: formData,
+                signal: controller.signal,
             });
 
-            console.log("response: ")
-            console.log(response);
+            clearTimeout(timeoutId);
+
             if (!response.ok) {
-                // Handle error response with status code 4xx
                 const containsJson = response?.headers?.get('Content-Type')?.includes('application/json');
                 const body = containsJson ? await response.json() : null;
-
-                const errorMessage = containsJson
-                    ? body.message || body
-                    : response.status;
-
-                const internalCode = containsJson
-                    ? body.internalAppCode
-                    : null
-
-                internalAppCodeRef.current = internalCode;
-                throw new Error(errorMessage);
+                errorMessage = containsJson ? body.message || body : response.status;
+                internalAppCode = containsJson ? body.internalAppCode : InternalAppCode.UNDEFINED_ERROR
+                throw new FetchError({ errorMessage, internalAppCode });
             }
 
             // here reponse is ok
             console.log("Image set successfully!");
+            setLoading(false);
             setSuccess(true);
         } catch (error: any) {
-            console.error(error.message)
-            if (internalAppCodeRef.current === InternalAppCode.ACCESS_TOKEN_EXPIRED) {
-                exchangeTokens();
-            }
+            const internalAppCode = error instanceof FetchError
+                ? error.internalAppCode
+                : error.name === "AbortError" ? InternalAppCode.REQUEST_TIMED_OUT : InternalAppCode.UNDEFINED_ERROR;
 
-        } finally {
-            // if token needs to be refreshed then loading indicator should keep on spinning
-            if (internalAppCodeRef.current !== InternalAppCode.ACCESS_TOKEN_EXPIRED) {
-                setLoading(false);
-            }
-        }
+            const errorMessage = error instanceof FetchError
+                ? error.message
+                : error.name === "AbortError" ? "Request został anulowany przez timeout" : `Niezdefiniowany błąd: ${error}`;
 
-    };
+            console.error(`InernalAppCode: ${internalAppCode}`);
+            console.error(`putUserImage error: ${errorMessage}`);
+            const callback = (newToken: string) => putImage(imageUri, newToken);
+            errorInterceptor(internalAppCode, setError, setLoading, callback);
+        };
+    }
 
     return { loading, success, error, putImage };
 }

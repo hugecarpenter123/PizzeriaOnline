@@ -1,13 +1,11 @@
-import React, { useEffect, memo } from "react";
+import React, {  } from "react";
 import { NativeStackScreenProps, createNativeStackNavigator } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../AppStacks";
 import PizzaList from "./PizzaList";
 import PizzaDetailScreen from "./PizzaDetailScreen";
 import CreateReviewScreen from "./CreateReviewScreen";
 import { Pizza } from "../../contexts/MainScreenContext";
-import { BackHandler } from 'react-native';
-import { useNavigation, useNavigationState } from '@react-navigation/native';
-import { TabParamList } from "../MainScreenTabs";
+import { TabParamList } from "../MainScreenTabsInner";
 
 type Props = NativeStackScreenProps<TabParamList & RootStackParamList, 'PizzaScreen'>;
 

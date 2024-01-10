@@ -1,64 +1,97 @@
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { ApiUrls } from "../utils/urls";
-import { Menu } from "../contexts/MainScreenContext";
+import { MainScreenContext, Menu } from "../contexts/MainScreenContext";
+import { ToastAndroid } from "react-native";
+import showToast from "../utils/showToast";
+import FetchError from "../utils/Errors/FetchError";
+import { InternalAppCode } from "../utils/StaticAppInfo";
+import useErrorInterceptor from "./useErrorInterceptor";
+import timeout from "../utils/Timeout";
 
 
 type FetchMenuHookResult = {
     error: null | string,
     loading: boolean,
-    menu: Menu | undefined,
+    // menu: Menu | undefined,
     fetchMenu: () => Promise<void>,
 }
 
 const useFetchMenu = (): FetchMenuHookResult => {
     const [error, setError] = useState<null | string>(null);
     const [loading, setLoading] = useState<boolean>(false);
-    const [menu, setMenu] = useState<undefined | Menu>(undefined);
+    const { setMenu } = useContext(MainScreenContext);
+    const { errorInterceptor } = useErrorInterceptor();
+
+    useEffect(() => {
+        if (error) {
+            showToast(error, ToastAndroid.LONG);
+        }
+    }, [error])
 
     const fetchMenu = async () => {
         console.log("fetch menu called");
+        let errorMessage = null;
+        let internalAppCode = null;
         setLoading(true);
         setError(null);
 
         try {
-            // promise that will ensure that after 6 seconds fetch will stop waiting
-            const timeoutPromise = new Promise((resolve, reject) => {
-                setTimeout(() => reject("Zbut długie oczekiwanie na odpowiedź serwera"), 6000);
-            });
+            const { timeoutId, controller } = timeout();
+            const response = await fetch(ApiUrls.GET_MENU, {
+                signal: controller.signal,
+            })
 
-            // promise that fetches data and sets it to MainScreenContext on success
-            const fetchPromise = fetch(ApiUrls.GET_MENU)
-                .then((response) => {
-                    if (!response.ok) {
-                        throw new Error("Server responded with an unwanted response code");
-                    }
-                    return response.json();
-                })
-                .then((data) => {
-                    const menuData: Menu = {
-                        pizzaList: data.pizzaList,
-                        drinkList: data.drinkList,
-                    };
-                    setError(null);
-                    setMenu(menuData);
-                    setLoading(false);
-                });
+            clearTimeout(timeoutId);
 
-            // whichever promise resolves quicker, the other will be terminated
-            Promise.race([fetchPromise, timeoutPromise])
-                .catch(e => setError(e))
-                .finally(() => setLoading(false));
+            if (!response.ok) {
+                const containsJson = response?.headers?.get('Content-Type')?.includes('application/json');
+                const body = containsJson ? await response.json() : null;
+                errorMessage = containsJson ? body.message || body : response.status;
+                internalAppCode = containsJson ? body.internalAppCode : InternalAppCode.UNDEFINED_ERROR
+                throw new FetchError({ errorMessage, internalAppCode });
+            }
+
+            // If response is empty throw proper error
+            if (!response?.headers?.get('Content-Type')?.includes('application/json')) {
+                errorMessage = "successfull request, but no JSON";
+                internalAppCode = InternalAppCode.BAD_JSON_RESPONSE;
+                throw new FetchError({ errorMessage, internalAppCode });
+            }
+
+            // Parse the response data
+            const responseData = await response.json();
+            // Check if the response contains the expected "result" key
+            if (!responseData.hasOwnProperty('result')) {
+                errorMessage = 'Invalid JSON response: "result" key is missing.';
+                internalAppCode = InternalAppCode.BAD_JSON_RESPONSE;
+                throw new FetchError({ errorMessage, internalAppCode });
+            }
+
+            // all necessary data parsed successfully
+            const result = responseData.result;
+            console.log("menu fetched successfully")
+            setMenu(result);
+            setLoading(false);
+
 
         } catch (error: any) {
-            console.log("FetchMenu catch block: ", error);
-            setError("Wydarzył się niezdefiniowany błąd podczas pobierania menu.");
+            const internalAppCode = error instanceof FetchError
+                ? error.internalAppCode
+                : error.name === "AbortError" ? InternalAppCode.REQUEST_TIMED_OUT : InternalAppCode.UNDEFINED_ERROR;
+
+            const errorMessage = error instanceof FetchError
+                ? error.message
+                : error.name === "AbortError" ? "Request został anulowany przez timeout" : `Niezdefiniowany błąd: ${error}`;
+
+            console.error(`InernalAppCode: ${internalAppCode}`);
+            console.error(`fetchMenu error: ${errorMessage}`);
+            errorInterceptor(internalAppCode, setError, setLoading);
         }
     };
 
     return {
         loading,
         error,
-        menu,
         fetchMenu,
     };
 };

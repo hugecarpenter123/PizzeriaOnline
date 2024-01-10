@@ -3,7 +3,10 @@ import showToast from '../utils/showToast';
 import { ApiUrls } from '../utils/urls';
 import { AppContext } from '../contexts/AppContext';
 import { InternalAppCode } from '../utils/StaticAppInfo';
-import useErrorInterceptor from './UseErrorInterceptor';
+import FetchError from '../utils/Errors/FetchError';
+import useErrorInterceptor from './useErrorInterceptor';
+import timeout from '../utils/Timeout';
+
 
 type FetchUserDetailsResult = {
     loading: boolean,
@@ -19,14 +22,6 @@ const useFetchUserDetails = (): FetchUserDetailsResult => {
     const { token, setUserDetails } = useContext(AppContext);
     const { errorInterceptor } = useErrorInterceptor();
 
-    const internalAppCodeRef = useRef<InternalAppCode | null>(null);
-
-    useEffect(() => {
-        if (internalAppCodeRef.current === InternalAppCode.ACCESS_TOKEN_EXPIRED) {
-            fetchUserDetails();
-            internalAppCodeRef.current = null;
-        }
-    }, [token])
 
     useEffect(() => {
         if (error) {
@@ -34,57 +29,68 @@ const useFetchUserDetails = (): FetchUserDetailsResult => {
         }
     }, [error]);
 
-    const fetchUserDetails = async (): Promise<void> => {
+    const fetchUserDetails = async (newToken?: string): Promise<void> => {
+        let internalAppCode = null;
+        let errorMessage = null;
         try {
             setLoading(true);
             setError(null);
-            const url = `${ApiUrls.GET_USER_DETAILS}`;
-
+            const { timeoutId, controller } = timeout();
+            const url = ApiUrls.GET_USER_DETAILS;
             const response = await fetch(url, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                }
+                    'Authorization': `Bearer ${newToken ? newToken : token}`,
+                },
+                signal: controller.signal,
             })
 
+            clearTimeout(timeoutId);
+
             if (!response.ok) {
-                // Handle error response with status code 4xx
                 const containsJson = response?.headers?.get('Content-Type')?.includes('application/json');
                 const body = containsJson ? await response.json() : null;
-                const errorMessage = containsJson ? body.message || body : response.status;
-                internalAppCodeRef.current = containsJson ? body.internalAppCode : null
-                throw new Error(errorMessage);
+                errorMessage = containsJson ? body.message || body : response.status;
+                internalAppCode = containsJson ? body.internalAppCode : InternalAppCode.UNDEFINED_ERROR
+                throw new FetchError({ errorMessage, internalAppCode });
             }
 
             // If response is empty, return null
             if (!response?.headers?.get('Content-Type')?.includes('application/json')) {
-                console.log("successfull request - no JSON")
-            } else {
-                // Parse the response data
-                const responseData = await response.json();
-                // Check if the response contains the expected "result" key
-                if (!responseData.hasOwnProperty('result')) {
-                    throw new Error('Invalid response data: "result" key is missing.');
-                } else {
-                    const result = responseData.result;
-                    // here all necessary data parsed successfully --------------------
-                    console.log("UserDetails fetched successfully")
-                    setUserDetails(result);
-                    setSuccess(true);
-                }
+                errorMessage = "successfull request, but no JSON";
+                internalAppCode = InternalAppCode.BAD_JSON_RESPONSE;
+                throw new FetchError({ errorMessage, internalAppCode });
             }
-        } catch (error: any) {
-            console.log("catch block: " + error)
 
-            if (internalAppCodeRef.current) {
-                errorInterceptor(internalAppCodeRef.current, setError);
+            // Parse the response data
+            const responseData = await response.json();
+            // Check if the response contains the expected "result" key
+            if (!responseData.hasOwnProperty('result')) {
+                errorMessage = 'Invalid JSON response: "result" key is missing.';
+                internalAppCode = InternalAppCode.BAD_JSON_RESPONSE;
+                throw new FetchError({ errorMessage, internalAppCode });
             }
-            else {
-                setError("Wydarzył się nieoczekiwany błąd, spróbuj ponownie później")
-            }
-        } finally {
-            if (internalAppCodeRef.current !== InternalAppCode.ACCESS_TOKEN_EXPIRED) setLoading(false);
+            // all necessary data parsed successfully
+            const result = responseData.result;
+            console.log("UserDetails fetched successfully")
+            setUserDetails(result);
+            setLoading(false);
+            setSuccess(true);
+
+
+        } catch (error: any) {
+            const internalAppCode = error instanceof FetchError
+                ? error.internalAppCode
+                : error.name === "AbortError" ? InternalAppCode.REQUEST_TIMED_OUT : InternalAppCode.UNDEFINED_ERROR;
+
+            const errorMessage = error instanceof FetchError
+                ? error.message
+                : error.name === "AbortError" ? "Request został anulowany przez timeout" : `Niezdefiniowany błąd: ${error}`;
+
+            console.error(`InernalAppCode: ${internalAppCode}`);
+            console.error(`fetchUserDetails error: ${errorMessage}`);
+            errorInterceptor(internalAppCode, setError, setLoading, fetchUserDetails);
         }
 
     };
