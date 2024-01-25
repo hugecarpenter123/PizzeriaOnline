@@ -1,7 +1,6 @@
 import React, { useContext, useState, useEffect, useMemo } from "react";
-import { SafeAreaView, Text, TouchableOpacity, StyleSheet, View } from "react-native";
+import { SafeAreaView, Text, TouchableOpacity, StyleSheet, View, FlatList } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { FlatList } from 'react-native-gesture-handler';
 import CartItem, { CartItemProps } from "../../components/CartItem";
 import { MainScreenContext, OrderItemType, OrderRemoveType, Pizza, orderedDrink, orderedPizza } from "../../contexts/MainScreenContext";
 import { Ionicons } from '@expo/vector-icons';

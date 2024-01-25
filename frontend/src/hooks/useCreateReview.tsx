@@ -9,7 +9,7 @@ import { initialWindowMetrics } from 'react-native-safe-area-context';
 import useErrorInterceptor from './useErrorInterceptor';
 import { MainScreenContext } from '../contexts/MainScreenContext';
 import useFetchMenu from './useFetchMenu';
-import timeout from '../utils/Timeout';
+import Timeout from '../utils/Timeout';
 import FetchError from '../utils/Errors/FetchError';
 
 export type ReviewModel = {
@@ -67,7 +67,7 @@ const useCreateReview = (): PutReviewHookResult => {
         setError(null);
 
         try {
-            const { timeoutId, controller } = timeout();
+            const { timeoutId, controller } = Timeout();
             const url = `${ApiUrls.POST_REVIEW}`;
 
             const response = await fetch(url, {

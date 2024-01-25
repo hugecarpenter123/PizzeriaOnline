@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, memo, useCallback } from "react";
-import { SafeAreaView, StyleSheet, ToastAndroid, RefreshControl } from "react-native";
+import { SafeAreaView, StyleSheet, ToastAndroid, RefreshControl, FlatList } from "react-native";
 import { MainScreenContext, OrderItemType, Pizza } from "../../contexts/MainScreenContext";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../AppStacks";
@@ -7,7 +7,6 @@ import ErrorMessage from "../../components/ErrorMessage";
 import PizzaItem from "../../components/PizzaItem";
 import { PizzaScreenParamList } from "./PizzaScreen";
 import showToast from "../../utils/showToast";
-import { FlatList } from "react-native-gesture-handler";
 import useFetchMenu from "../../hooks/useFetchMenu";
 
 type Props = NativeStackScreenProps<PizzaScreenParamList & RootStackParamList, "PizzaList">

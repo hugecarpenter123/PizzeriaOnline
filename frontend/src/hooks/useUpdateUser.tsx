@@ -7,7 +7,7 @@ import useExchangeTokens from "./useExchangeTokens";
 import { InternalAppCode } from "../utils/StaticAppInfo";
 import useErrorInterceptor from "./useErrorInterceptor";
 import FetchError from "../utils/Errors/FetchError";
-import timeout from "../utils/Timeout";
+import Timeout from "../utils/Timeout";
 
 type RegistrationHookResult = {
     loading: boolean;
@@ -81,7 +81,7 @@ const useUpdateUser = (): RegistrationHookResult => {
             const payload = JSON.stringify(data);
             const url = ApiUrls.PUT_USER_DETAILS
 
-            const { timeoutId, controller } = timeout();
+            const { timeoutId, controller } = Timeout();
             const response = await fetch(url, {
                 method: 'PUT',
                 headers: {

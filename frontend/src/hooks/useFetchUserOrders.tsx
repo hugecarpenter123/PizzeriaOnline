@@ -7,7 +7,7 @@ import useErrorInterceptor from './useErrorInterceptor';
 import { InternalAppCode } from '../utils/StaticAppInfo';
 import FetchError from '../utils/Errors/FetchError';
 import ContactForm from '../components/ContactForm';
-import timeout from '../utils/Timeout';
+import Timeout from '../utils/Timeout';
 
 type FetchUserOrdersResult = {
     loading: boolean,
@@ -41,7 +41,7 @@ const useFetchUserOrders = (): FetchUserOrdersResult => {
             setLoading(true);
             setError(null);
 
-            const { timeoutId, controller } = timeout();
+            const { timeoutId, controller } = Timeout();
 
             const url = ApiUrls.GET_USER_ORDERS;
             const response = await fetch(url, {

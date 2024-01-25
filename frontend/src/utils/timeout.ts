@@ -1,4 +1,4 @@
-const timeout = (milis?: number) => {
+const Timeout = (milis?: number) => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => {
         controller.abort();
@@ -10,4 +10,4 @@ const timeout = (milis?: number) => {
     return { timeoutId, controller };
 }
 
-export default timeout;
+export default Timeout;

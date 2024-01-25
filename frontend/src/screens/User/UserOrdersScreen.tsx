@@ -1,9 +1,8 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { SafeAreaView, Text, View, FlatList, StyleSheet } from 'react-native';
+import { SafeAreaView, Text, View, FlatList, StyleSheet, RefreshControl } from 'react-native';
 import OrderListItem from '../../components/OrderListItem';
 import { MainScreenContext, UserOrder } from '../../contexts/MainScreenContext';
 import useFetchUserOrders from '../../hooks/useFetchUserOrders';
-import { RefreshControl } from 'react-native-gesture-handler';
 
 
 export default function UserOrdersScreen() {

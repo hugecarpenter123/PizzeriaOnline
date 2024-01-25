@@ -6,7 +6,7 @@ import { InternalAppCode } from '../utils/StaticAppInfo';
 import useForceLogout from './useForceLogout';
 import useErrorInterceptor from './useErrorInterceptor';
 import FetchError from '../utils/Errors/FetchError';
-import timeout from '../utils/Timeout';
+import Timeout from '../utils/Timeout';
 
 type DeleteAccountHookResult = {
     loading: boolean,
@@ -41,7 +41,7 @@ const useDeleteAccount = (): DeleteAccountHookResult => {
             setLoading(true);
             setError(null);
 
-            const { timeoutId, controller } = timeout();
+            const { timeoutId, controller } = Timeout();
 
             const url = ApiUrls.DELETE_USER;
             const response = await fetch(url, {

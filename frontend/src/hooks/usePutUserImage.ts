@@ -4,7 +4,7 @@ import { ApiUrls } from '../utils/urls';
 import { AppContext } from '../contexts/AppContext';
 import useFetchUserDetails from './useFetchUserDetails';
 import { InternalAppCode } from '../utils/StaticAppInfo';
-import timeout from '../utils/Timeout';
+import Timeout from '../utils/Timeout';
 import FetchError from '../utils/Errors/FetchError';
 import useErrorInterceptor from './useErrorInterceptor';
 
@@ -70,7 +70,7 @@ const usePutUserImage = (): PutUserImageRHookResult => {
 
             const url = `${ApiUrls.PUT_USER_IMAGE}`;
             const formData = prepareFormData(imageUri);
-            const { timeoutId, controller } = timeout();
+            const { timeoutId, controller } = Timeout();
             const response = await fetch(url, {
                 method: 'PUT',
                 headers: {

@@ -8,7 +8,7 @@ import { RootStackParamList } from '../screens/AppStacks';
 import useErrorInterceptor from './useErrorInterceptor';
 import { InternalAppCode } from '../utils/StaticAppInfo';
 import FetchError from '../utils/Errors/FetchError';
-import timeout from '../utils/Timeout';
+import Timeout from '../utils/Timeout';
 
 type DeleteOrderHookResult = {
     loading: boolean,
@@ -47,7 +47,7 @@ const useDeleteOrder = (): DeleteOrderHookResult => {
             setLoading(true);
             setError(null);
 
-            const { timeoutId, controller } = timeout();
+            const { timeoutId, controller } = Timeout();
 
             const url = `${ApiUrls.CANCEL_ORDER}/${id}`
             const response = await fetch(url, {

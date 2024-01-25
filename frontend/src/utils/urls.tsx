@@ -1,5 +1,4 @@
-const API_BASE_URL = "http://192.168.1.39:8082/api"
-// const API_BASE_URL = "http://192.168.0.104:8082/api"
+const API_BASE_URL = "http://192.168.1.39:8082/api" // main 
 
 export const ApiUrls = {
     GET_MENU: `${API_BASE_URL}/menu`,

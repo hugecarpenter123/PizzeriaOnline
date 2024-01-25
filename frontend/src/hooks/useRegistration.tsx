@@ -5,7 +5,7 @@ import showToast from "../utils/showToast";
 import useErrorInterceptor from "./useErrorInterceptor";
 import { InternalAppCode } from "../utils/StaticAppInfo";
 import FetchError from "../utils/Errors/FetchError";
-import timeout from "../utils/Timeout";
+import Timeout from "../utils/Timeout";
 
 type RegistrationHookResult = {
     loading: boolean;
@@ -34,7 +34,7 @@ const useRegistration = (): RegistrationHookResult => {
             setSuccess(false);
 
             const payload = JSON.stringify(data);
-            const { timeoutId, controller } = timeout();
+            const { timeoutId, controller } = Timeout();
             const response = await fetch(ApiUrls.POST_REGISTER, {
                 method: 'POST',
                 headers: {

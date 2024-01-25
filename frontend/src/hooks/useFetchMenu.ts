@@ -6,7 +6,7 @@ import showToast from "../utils/showToast";
 import FetchError from "../utils/Errors/FetchError";
 import { InternalAppCode } from "../utils/StaticAppInfo";
 import useErrorInterceptor from "./useErrorInterceptor";
-import timeout from "../utils/Timeout";
+import Timeout from "../utils/Timeout";
 
 
 type FetchMenuHookResult = {
@@ -36,7 +36,7 @@ const useFetchMenu = (): FetchMenuHookResult => {
         setError(null);
 
         try {
-            const { timeoutId, controller } = timeout();
+            const { timeoutId, controller } = Timeout();
             const response = await fetch(ApiUrls.GET_MENU, {
                 signal: controller.signal,
             })

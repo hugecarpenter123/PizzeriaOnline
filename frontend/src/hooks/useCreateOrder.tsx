@@ -6,10 +6,9 @@ import useFetchUserDetails from './useFetchUserDetails';
 import { OrderPayloadModel } from '../screens/Cart/OrderCompletionScreen';
 import { MainScreenContext } from '../contexts/MainScreenContext';
 import { InternalAppCode } from '../utils/StaticAppInfo';
-import useExchangeTokens from './useExchangeTokens';
 import useErrorInterceptor from './useErrorInterceptor';
 import FetchError from '../utils/Errors/FetchError';
-import timeout from '../utils/Timeout';
+import Timeout from '../utils/Timeout';
 import { createAbstractBuilder } from 'typescript';
 
 type PostOrderHookResult = {
@@ -51,7 +50,7 @@ const useCreateOrder = (): PostOrderHookResult => {
         try {
             setLoading(true);
             setError(null)
-            const { timeoutId, controller } = timeout();
+            const { timeoutId, controller } = Timeout();
 
             const url = ApiUrls.POST_ORDER;
             const response = await fetch(url, {

@@ -5,7 +5,7 @@ import { AppContext } from '../contexts/AppContext';
 import { InternalAppCode } from '../utils/StaticAppInfo';
 import FetchError from '../utils/Errors/FetchError';
 import useErrorInterceptor from './useErrorInterceptor';
-import timeout from '../utils/Timeout';
+import Timeout from '../utils/Timeout';
 
 
 type FetchUserDetailsResult = {
@@ -35,7 +35,7 @@ const useFetchUserDetails = (): FetchUserDetailsResult => {
         try {
             setLoading(true);
             setError(null);
-            const { timeoutId, controller } = timeout();
+            const { timeoutId, controller } = Timeout();
             const url = ApiUrls.GET_USER_DETAILS;
             const response = await fetch(url, {
                 method: 'GET',

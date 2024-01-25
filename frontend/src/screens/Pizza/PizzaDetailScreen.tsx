@@ -1,9 +1,8 @@
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import React, { useContext, useState, useEffect } from "react";
-import { SafeAreaView, Text, StyleSheet, TouchableOpacity, ScrollView, Image, View } from "react-native";
+import { SafeAreaView, Text, StyleSheet, TouchableOpacity, ScrollView, Image, View, FlatList } from "react-native";
 import { PizzaScreenParamList } from "./PizzaScreen";
 import { MainScreenContext, Pizza, Review } from "../../contexts/MainScreenContext"
-import { FlatList } from "react-native-gesture-handler";
 import RenderPizzaReviewItem from "../../components/RenderPizzaReviewItem";
 import { AppContext } from "../../contexts/AppContext";
 

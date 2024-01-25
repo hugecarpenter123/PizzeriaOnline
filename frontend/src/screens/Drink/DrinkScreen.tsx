@@ -1,9 +1,8 @@
 import React, { useContext, useCallback } from "react";
-import { SafeAreaView, StyleSheet, RefreshControl, Text, ToastAndroid } from "react-native";
+import { SafeAreaView, StyleSheet, RefreshControl, Text, ToastAndroid, FlatList } from "react-native";
 import { MainScreenContext, OrderItemType } from "../../contexts/MainScreenContext";
 import DrinkItem from "../../components/DrinkItem";
 import { Drink } from "../../contexts/MainScreenContext";
-import { FlatList } from "react-native-gesture-handler";
 import showToast from "../../utils/showToast";
 import useFetchMenu from "../../hooks/useFetchMenu";
 

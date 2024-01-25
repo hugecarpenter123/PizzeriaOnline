@@ -7,7 +7,7 @@ import { InternalAppCode } from '../utils/StaticAppInfo';
 import { MainScreenContext } from '../contexts/MainScreenContext';
 import useFetchMenu from './useFetchMenu';
 import FetchError from '../utils/Errors/FetchError';
-import timeout from '../utils/Timeout';
+import Timeout from '../utils/Timeout';
 
 export type ReviewModel = {
     pizzaId: number,
@@ -93,7 +93,7 @@ const usePutReview = (): PutReviewHookResult => {
             setLoading(true);
             setError(null);
 
-            const { timeoutId, controller } = timeout();
+            const { timeoutId, controller } = Timeout();
             const payload = JSON.stringify(data);
             const url = `${ApiUrls.PUT_REVIEW}/${reviewId}`;
             const response = await fetch(url, {
