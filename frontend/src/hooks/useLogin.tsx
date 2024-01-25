@@ -1,9 +1,9 @@
-import React, { useState, useContext, useRef } from "react";
+import React, { useState, useContext } from "react";
 import { ApiUrls } from "../utils/urls";
 import { AppContext } from "../contexts/AppContext";
-import useErrorInterceptor from "./useErrorInterceptor";
 import { InternalAppCode } from "../utils/StaticAppInfo";
 import FetchError from "../utils/Errors/FetchError";
+import useErrorInterceptor from "./useErrorInterceptor";
 import Timeout from "../utils/Timeout";
 
 type LoginHookResult = {

@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import { RegistrationData } from "../screens/RegistrationScreen";
 import { ApiUrls } from "../utils/urls";
-import showToast from "../utils/showToast";
 import useErrorInterceptor from "./useErrorInterceptor";
 import { InternalAppCode } from "../utils/StaticAppInfo";
 import FetchError from "../utils/Errors/FetchError";
@@ -23,7 +22,7 @@ const useRegistration = (): RegistrationHookResult => {
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const { errorInterceptor } = useErrorInterceptor();
-    const internalAppCodeRef = useRef<InternalAppCode | null>(null);
+
 
     const register = async (data: RegistrationData): Promise<void> => {
         let errorMessage = null;

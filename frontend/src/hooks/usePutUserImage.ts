@@ -12,7 +12,7 @@ type PutUserImageRHookResult = {
     loading: boolean,
     success: boolean,
     error: string | null,
-    putImage: (imageUri: String) => void,
+    putImage: (imageUri: string) => void,
 }
 
 const usePutUserImage = (): PutUserImageRHookResult => {
@@ -40,7 +40,7 @@ const usePutUserImage = (): PutUserImageRHookResult => {
         updateUserDetails();
     }
 
-    const prepareFormData = (imageUri: String) => {
+    const prepareFormData = (imageUri: string) => {
         const mimeTypes: { [key: string]: string } = {
             jpg: 'image/jpeg',
             jpeg: 'image/jpeg',
@@ -61,7 +61,7 @@ const usePutUserImage = (): PutUserImageRHookResult => {
         return formData;
     }
 
-    const putImage = async (imageUri: String, newToken?: string): Promise<void> => {
+    const putImage = async (imageUri: string, newToken?: string): Promise<void> => {
         let errorMessage = null;
         let internalAppCode = null;
         try {

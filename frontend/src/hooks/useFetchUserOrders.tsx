@@ -1,12 +1,11 @@
-import React, { useState, useEffect, useContext, useRef } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import showToast from '../utils/showToast';
 import { ApiUrls } from '../utils/urls';
 import { AppContext } from '../contexts/AppContext';
-import { MainScreenContext, UserOrder } from '../contexts/MainScreenContext';
+import { UserOrder } from '../contexts/MainScreenContext';
 import useErrorInterceptor from './useErrorInterceptor';
 import { InternalAppCode } from '../utils/StaticAppInfo';
 import FetchError from '../utils/Errors/FetchError';
-import ContactForm from '../components/ContactForm';
 import Timeout from '../utils/Timeout';
 
 type FetchUserOrdersResult = {

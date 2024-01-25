@@ -1,10 +1,8 @@
-import React, { useState, useEffect, useContext, useRef } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import showToast from '../utils/showToast';
 import { ApiUrls } from '../utils/urls';
-import { AppContext, UserDetails, UserReview } from '../contexts/AppContext';
+import { AppContext } from '../contexts/AppContext';
 import useFetchUserOrders from './useFetchUserOrders';
-import { CommonActions, NavigationProp, useNavigation } from '@react-navigation/native';
-import { RootStackParamList } from '../screens/AppStacks';
 import useErrorInterceptor from './useErrorInterceptor';
 import { InternalAppCode } from '../utils/StaticAppInfo';
 import FetchError from '../utils/Errors/FetchError';

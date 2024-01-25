@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Image, ImageBackground, View, StyleSheet, TouchableOpacity, Alert  } from "react-native";
+import { Image, ImageBackground, View, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { setEmitFlags } from "typescript";
@@ -14,7 +14,7 @@ type Props = {
 
 export default function UserProfilePicture({ imageSource }: Props) {
   const { userDetails } = useContext(AppContext);
-  const [selectedImage, setSelectedImage] = useState<String | undefined>(undefined);
+  const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined);
   const imageUri = userDetails?.imageUrl;
   const { loading, putImage } = usePutUserImage();
 
@@ -56,6 +56,7 @@ export default function UserProfilePicture({ imageSource }: Props) {
     <View style={styles.container}>
       <View style={styles.imageContainer}>
         <Image source={imageUri ? { uri: imageUri } : require('../../assets/images/no-user.png')} style={styles.image} />
+        {/* <Image source={{uri: 'http://192.168.1.39:8082/images/pizza/pizza-default.jpg'}} style={styles.image} /> */}
       </View>
       <TouchableOpacity style={styles.editIconContainer} onPress={onImagePicked}>
         <MaterialCommunityIcons name="image-edit" size={24} color="black" />

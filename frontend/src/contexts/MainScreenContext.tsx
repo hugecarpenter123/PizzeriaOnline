@@ -1,10 +1,5 @@
-import React, { useState, createContext, useEffect, useContext, ReactNode, useCallback, useMemo } from "react"
+import React, { useState, createContext, useEffect, ReactNode, useCallback, useMemo } from "react"
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AppContext } from "./AppContext";
-import { StackRouter } from "@react-navigation/native";
-import { tokens } from "react-native-paper/lib/typescript/styles/themes/v3/tokens";
-import useFetchUserOrders from "../hooks/useFetchUserOrders";
-import useFetchMenu from "../hooks/useFetchMenu";
 
 export enum OrderItemType {
     PIZZA,

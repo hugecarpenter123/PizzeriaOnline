@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useContext, useRef } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import showToast from '../utils/showToast';
 import { ApiUrls } from '../utils/urls';
-import { AppContext, UserDetails, UserReview } from '../contexts/AppContext';
+import { AppContext } from '../contexts/AppContext';
 import useFetchUserDetails from './useFetchUserDetails';
 import { OrderPayloadModel } from '../screens/Cart/OrderCompletionScreen';
 import { MainScreenContext } from '../contexts/MainScreenContext';
@@ -9,7 +9,6 @@ import { InternalAppCode } from '../utils/StaticAppInfo';
 import useErrorInterceptor from './useErrorInterceptor';
 import FetchError from '../utils/Errors/FetchError';
 import Timeout from '../utils/Timeout';
-import { createAbstractBuilder } from 'typescript';
 
 type PostOrderHookResult = {
     loading: boolean,

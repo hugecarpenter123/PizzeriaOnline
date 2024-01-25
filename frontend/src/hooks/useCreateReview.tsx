@@ -1,13 +1,10 @@
-import React, { useState, useEffect, useContext, useRef } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import showToast from '../utils/showToast';
 import { ApiUrls } from '../utils/urls';
-import { AppContext, UserDetails, UserReview } from '../contexts/AppContext';
-import useUpdateUser from './useUpdateUser';
+import { AppContext } from '../contexts/AppContext';
 import useFetchUserDetails from './useFetchUserDetails';
 import { InternalAppCode } from '../utils/StaticAppInfo';
-import { initialWindowMetrics } from 'react-native-safe-area-context';
 import useErrorInterceptor from './useErrorInterceptor';
-import { MainScreenContext } from '../contexts/MainScreenContext';
 import useFetchMenu from './useFetchMenu';
 import Timeout from '../utils/Timeout';
 import FetchError from '../utils/Errors/FetchError';

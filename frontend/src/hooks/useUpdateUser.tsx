@@ -1,9 +1,7 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
-import { RegistrationData } from "../screens/RegistrationScreen";
+import { useState, useEffect, useContext } from "react";
 import { ApiUrls } from "../utils/urls";
 import showToast from "../utils/showToast";
 import { AppContext, UserDetails } from "../contexts/AppContext";
-import useExchangeTokens from "./useExchangeTokens";
 import { InternalAppCode } from "../utils/StaticAppInfo";
 import useErrorInterceptor from "./useErrorInterceptor";
 import FetchError from "../utils/Errors/FetchError";
@@ -39,7 +37,7 @@ const useUpdateUser = (): RegistrationHookResult => {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const { token, userDetails, setUserDetails } = useContext(AppContext);
+    const { token, setUserDetails } = useContext(AppContext);
     const { errorInterceptor } = useErrorInterceptor();
 
     useEffect(() => {
