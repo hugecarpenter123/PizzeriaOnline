@@ -15,7 +15,6 @@ import java.util.Iterator;
 
 @SpringBootApplication
 public class PizzeriaBackendApplication {
-
     public static void main(String[] args) {
         SpringApplication.run(PizzeriaBackendApplication.class, args);
     }

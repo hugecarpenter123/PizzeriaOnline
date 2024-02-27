@@ -24,6 +24,10 @@ public class StaticAppInfo {
     @Value("${image-upload-folder}")
     private String imageRootFolder;
 
+    public String getApplicationHost() {
+        return serverAddress + ":" + serverPort;
+    }
+
     // URLS that trigger controller response -------------------------
     public String getPizzaImgUrlPath() {
         return String.format("http://%s:%s/images/pizza",
