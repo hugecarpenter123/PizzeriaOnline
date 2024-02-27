@@ -6,11 +6,11 @@ import com.example.Pizzeriabackend.config.JWT.model.RefreshTokenRequest;
 import com.example.Pizzeriabackend.config.JWT.model.RefreshTokenResponse;
 import com.example.Pizzeriabackend.config.JWT.service.JwtService;
 import com.example.Pizzeriabackend.event.registration.RegistrationEvent;
+import com.example.Pizzeriabackend.model.request.CreateSuperuserRequest;
 import com.example.Pizzeriabackend.model.request.EmailRequest;
+import com.example.Pizzeriabackend.model.request.UserDetailsRequest;
 import com.example.Pizzeriabackend.model.response.OrderDTO;
 import com.example.Pizzeriabackend.model.response.UserDetailsDTO;
-import com.example.Pizzeriabackend.model.request.CreateSuperuserRequest;
-import com.example.Pizzeriabackend.model.request.UserDetailsRequest;
 import com.example.Pizzeriabackend.service.OrderService;
 import com.example.Pizzeriabackend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,9 +56,9 @@ public class UserController {
     }
 
     @PutMapping("/update")
-    public ResponseEntity<UserDetailsDTO> updateUser(@RequestBody UserDetailsRequest userDetailsRequest) {
+    public ResponseEntity<Map<String, UserDetailsDTO>> updateUser(@RequestBody UserDetailsRequest userDetailsRequest) {
         UserDetailsDTO userDetails = userService.updateUser(userDetailsRequest);
-        return ResponseEntity.ok(userDetails);
+        return ResponseEntity.ok(Map.of("result", userDetails));
     }
 
     @GetMapping("/orders")
@@ -80,7 +80,7 @@ public class UserController {
     }
 
     @PostMapping("/refreshToken")
-    public ResponseEntity<RefreshTokenResponse> refreshToken(RefreshTokenRequest request) {
+    public ResponseEntity<RefreshTokenResponse> refreshToken(@RequestBody RefreshTokenRequest request) {
         RefreshTokenResponse response = jwtService.refreshToken(request);
         return ResponseEntity.ok(response);
     }
@@ -88,7 +88,7 @@ public class UserController {
     // admin only ------------------------------------------
     @PostMapping("/super-user")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<Void> createSuperUser(CreateSuperuserRequest createSuperuserRequest) {
+    public ResponseEntity<Void> createSuperUser(@RequestBody CreateSuperuserRequest createSuperuserRequest) {
         userService.createSuperUser(createSuperuserRequest);
         return ResponseEntity.ok().build();
     }
