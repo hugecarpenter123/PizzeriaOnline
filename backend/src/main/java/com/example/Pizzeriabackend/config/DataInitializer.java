@@ -6,6 +6,7 @@ import com.example.Pizzeriabackend.repository.*;
 import com.example.Pizzeriabackend.util.StaticAppInfo;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -26,19 +27,21 @@ public class DataInitializer implements CommandLineRunner {
     private final List<String> drinkImgNames;
     private final DrinkRepository drinkRepository;
     private final ReviewRepository reviewRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public DataInitializer(
             UserRepository userRepository,
             IngredientRepository ingredientRepository,
             StaticAppInfo staticAppInfo,
             PizzaRepository pizzaRepository,
-            DrinkRepository drinkRepository, ReviewRepository reviewRepository) {
+            DrinkRepository drinkRepository, ReviewRepository reviewRepository, PasswordEncoder passwordEncoder) {
         this.reviewRepository = reviewRepository;
         this.userRepository = userRepository;
         this.pizzaRepository = pizzaRepository;
         this.ingredientRepository = ingredientRepository;
         this.staticAppInfo = staticAppInfo;
         this.drinkRepository = drinkRepository;
+        this.passwordEncoder = passwordEncoder;
 
         pizzaImgNames = getFileNames(this.staticAppInfo.getUploadPizzaImgDir());
         drinkImgNames = getFileNames(this.staticAppInfo.getUploadDrinkImgDir());
@@ -57,9 +60,9 @@ public class DataInitializer implements CommandLineRunner {
     private void createDrinks() {
         List<String> drinkNames = List.of("Fanta", "Pepsi", "Coca Cola", "Woda gazowana", "Mirinda", "Frugo");
         drinkNames.forEach(drinkName -> {
-            float price1 = Math.round(ThreadLocalRandom.current().nextFloat(1.5f, 2.6f) * 100) / 100f;
-            float price2 = Math.round(ThreadLocalRandom.current().nextFloat(3, 4) * 100) / 100f;
-            float price3 = Math.round(ThreadLocalRandom.current().nextFloat(4.5f, 5.5f) * 100) / 100f;
+            double price1 = Math.round(ThreadLocalRandom.current().nextDouble(1.5, 2.6) * 100) / (double) 100;
+            double price2 = Math.round(ThreadLocalRandom.current().nextDouble(3, 4) * 100) / (double) 100;
+            double price3 = Math.round(ThreadLocalRandom.current().nextDouble(4.5, 5.5) * 100) / (double) 100;
 
             Drink drink = Drink.builder()
                     .name(drinkName)
@@ -92,9 +95,9 @@ public class DataInitializer implements CommandLineRunner {
         List<String> pizzaNames = List.of("Margarita", "Pepperoni", "Capricioza", "Wegetariańska", "Wiosenna", "Hawajska");
 
         pizzaNames.forEach(pizzaName -> {
-            float price1 = Math.round(ThreadLocalRandom.current().nextFloat(19, 24) * 100) / 100f;
-            float price2 = Math.round(ThreadLocalRandom.current().nextFloat(26, 30) * 100) / 100f;
-            float price3 = Math.round(ThreadLocalRandom.current().nextFloat(31, 34) * 100) / 100f;
+            double price1 = Math.round(ThreadLocalRandom.current().nextDouble(19, 24) * 100) / (double) 100;
+            double price2 = Math.round(ThreadLocalRandom.current().nextDouble(26, 30) * 100) / (double) 100;
+            double price3 = Math.round(ThreadLocalRandom.current().nextDouble(31, 34) * 100) / (double) 100;
 
             Pizza pizza = Pizza.builder()
                     .name(pizzaName)
@@ -144,14 +147,15 @@ public class DataInitializer implements CommandLineRunner {
         User user = User.builder()
                 .name("Ty")
                 .surname("Lee")
-                .password("user")
                 .email("user@gmail.com")
+                .password(passwordEncoder.encode("user"))
                 .imageUrl(staticAppInfo.getDefaultUserImgUrl())
                 .city("Radom")
                 .street("Janusza")
                 .houseNumber("23")
                 .cityCode("12-123")
                 .phoneNumber("111222333")
+                .role(Role.USER)
                 .build();
 
         userRepository.save(user);
