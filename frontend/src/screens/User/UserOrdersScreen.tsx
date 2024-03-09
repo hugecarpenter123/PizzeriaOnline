@@ -32,6 +32,7 @@ export default function UserOrdersScreen() {
 const styles = StyleSheet.create({
     container: {
         padding: 10,
+        flex: 1,
     },
     flatList: {
     },

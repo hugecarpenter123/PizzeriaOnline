@@ -9,6 +9,7 @@ import { InternalAppCode } from '../utils/StaticAppInfo';
 import useErrorInterceptor from './useErrorInterceptor';
 import FetchError from '../utils/Errors/FetchError';
 import Timeout from '../utils/Timeout';
+import useFetchUserOrders from './useFetchUserOrders';
 
 type PostOrderHookResult = {
     loading: boolean,
@@ -23,7 +24,7 @@ const useCreateOrder = (): PostOrderHookResult => {
     const [error, setError] = useState<string | null>(null);
     const { token } = useContext(AppContext);
     const { clearCart } = useContext(MainScreenContext);
-    const { fetchUserDetails: updateUserDetails } = useFetchUserDetails();
+    const { fetchUserOrders: updateUserOrders } = useFetchUserOrders();
     const { errorInterceptor } = useErrorInterceptor();
 
     // handle error and success
@@ -38,7 +39,7 @@ const useCreateOrder = (): PostOrderHookResult => {
 
     const updateContext = () => {
         // update userDetails - which contain Orders
-        updateUserDetails();
+        updateUserOrders();
         clearCart();
     }
 

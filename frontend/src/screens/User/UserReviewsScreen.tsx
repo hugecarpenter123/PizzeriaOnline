@@ -3,7 +3,6 @@ import { SafeAreaView, FlatList, View, Text, StyleSheet, Image, TouchableOpacity
 import { FontAwesome } from '@expo/vector-icons';
 import { AppContext, UserReview } from '../../contexts/AppContext';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { TopTabParamList } from './UserScreen';
 import { UserReviewsStackParamList } from './UserReviewsTabs';
 
 
@@ -117,5 +116,5 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         height: '100%',
         justifyContent: 'flex-end'
-    }
+    },
 });
