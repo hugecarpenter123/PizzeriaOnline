@@ -20,7 +20,6 @@ const CartScreen = ({ route, navigation }: Props) => {
 
     useEffect(() => {
         console.log("CartScreen.useEffect()[data, menu]")
-        // Calculate the total sum
         const totalSum = data.reduce((sum, item) => {
             const menuItem = "pizzaId" in item
                 ? menu?.pizzaList.find((x) => x.id === item.pizzaId)
@@ -30,16 +29,11 @@ const CartScreen = ({ route, navigation }: Props) => {
             return sum + price * item.quantity;
         }, 0);
 
-        // Update the state with the total sum
         setSum(totalSum);
     }, [data, menu]);
 
-    useEffect(() => {
-        console.log("CartScreen.useEffect()[cart]")
-    }, [cart])
 
     // flat list related =====================================================
-
     const keyExtractor = (item: orderedPizza | orderedDrink) => {
         if ('pizzaId' in item) {
             return `p-${item.pizzaId}-${item.size}`
@@ -49,8 +43,9 @@ const CartScreen = ({ route, navigation }: Props) => {
     }
     const separatorComponent = () => (<View style={styles.separator}></View>)
     const emptyListComponent = () => (<Text style={{ alignSelf: 'center'}}>Brak zamówień</Text>)
-
     // END flat list related ==================================================
+
+
     type ItemProps = {
         item: orderedPizza | orderedDrink
         index: number
@@ -70,7 +65,6 @@ const CartScreen = ({ route, navigation }: Props) => {
         const priceList = [smallSizePrice, mediumSizePrice, bigSizePrice];
 
 
-        // wypełnij propsy zdefiniowane w CartItemProps
         const cartItem: CartItemProps = {
             type: "pizzaId" in item ? OrderItemType.PIZZA : OrderItemType.DRINK,
             imageUrl: imageUrl || '',
@@ -83,7 +77,6 @@ const CartScreen = ({ route, navigation }: Props) => {
             delete: () => removeOrderItem(menuItem?.id || 0, "pizzaId" in item ? OrderItemType.PIZZA : OrderItemType.DRINK, item.size, OrderRemoveType.ALL)
         }
 
-        // zwróć komponent, zbudowany z powyższych propsów
         return (
             <CartItem item={cartItem} />
         )

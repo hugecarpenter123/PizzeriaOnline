@@ -1,15 +1,9 @@
-import React, { useState, useContext, useEffect, useMemo } from 'react';
-import { SafeAreaView, Text, StyleSheet, View, ScrollView, StatusBar, RefreshControl } from 'react-native';
-import { AppContext, UserDetails } from '../../contexts/AppContext';
-import { useFocusEffect } from '@react-navigation/native';
-import EditField from '../../components/EditField';
-import Validation from '../../utils/validation';
+import React, { useState } from 'react';
+import { SafeAreaView, StyleSheet, View, ScrollView, RefreshControl } from 'react-native';
 import AddressEditFields from '../../components/AddressEditFields';
 import PasswordsEditFields from '../../components/PasswordsEditFields';
 import UserProfilePicture from '../../components/UserProfilePicture';
-import DateEditField from '../../components/DateEditField';
 import UserInfoBottom from '../../components/UserInfoBottom';
-import LoadingIndicator from '../../components/LoadingIndicator';
 import useFetchUserDetails from '../../hooks/useFetchUserDetails';
 import PersonalEditFields from '../../components/PersonalEditFields';
 

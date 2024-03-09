@@ -20,11 +20,9 @@ const CreateReviewScreen = ({ route, navigation }: Props) => {
         if (stars < clickedStar || stars > clickedStar) {
             setStars(clickedStar)
         } else if (stars === clickedStar) {
-            // gwiazdka jest pełna
             if (stars % 1 == 0) {
                 setStars(clickedStar - 0.5);
             }
-            // gwiazdka pół pełna
             else {
                 setStars(Math.ceil(clickedStar))
             }
@@ -77,7 +75,6 @@ const CreateReviewScreen = ({ route, navigation }: Props) => {
             return;
         }
         // else there are changes
-        // TODO: make request to replace the comment
         else {
             const data = {
                 pizzaId: pizza.id,
@@ -85,7 +82,6 @@ const CreateReviewScreen = ({ route, navigation }: Props) => {
                 content,
             }
 
-            // TODO: make request to create new review
             addReview(data);
         }
     }
@@ -133,7 +129,6 @@ const styles = StyleSheet.create({
     },
     reviewContainer: {
         backgroundColor: '#f0f0f0',
-        // backgroundColor: 'purple',
         borderRadius: 8,
         padding: 10,
         marginBottom: 10,

@@ -52,5 +52,4 @@ const styles = StyleSheet.create({
     },
 });
 
-// export default memo(DrinkScreen)
 export default DrinkScreen;

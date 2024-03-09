@@ -93,7 +93,6 @@ const styles = StyleSheet.create({
     },
     createdAt: {
         color: '#888',
-        // backgroundColor: 'aqua',
     },
     content: {
         fontSize: 16,
@@ -111,11 +110,9 @@ const styles = StyleSheet.create({
         gap: 10,
     },
     center: {
-        // backgroundColor: 'purple',
         height: '100%'
     },
     right: {
-        // backgroundColor: 'yellow',
         flex: 1,
         flexDirection: 'row',
         height: '100%',

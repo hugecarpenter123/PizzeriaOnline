@@ -253,8 +253,6 @@ const MainScreenContextProvider = ({ children }: Props) => {
     const removeOrderItem = useCallback(
         (id: number, type: OrderItemType, size: number, removeType: OrderRemoveType) => {
             setCart((prevCart) => {
-                console.log("------------ Prev Cart --------------")
-                console.log([prevCart])
                 const updatedCart = { ...prevCart }
                 // if order type is pizza
                 if (type == OrderItemType.PIZZA) {

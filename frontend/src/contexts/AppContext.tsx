@@ -62,7 +62,7 @@ export type UserDetails = {
   houseNumber: string,
   phoneNumber: string,
   dateOfBirth: string,
-  reviews: UserReview[], // TODO: possibly remove it, and access it though endpoint on a given screen
+  reviews: UserReview[],
 }
 
 type LoginResponse = {
@@ -165,10 +165,6 @@ const AppContextProvider = ({ children }: Props) => {
     },
     []
   );
-
-  // const removeCartStorage = async () => {
-  //   await SecureStore.deleteItemAsync("cart");
-  // }
 
   return (
     <AppContext.Provider value={{ isConnected, token, setToken, refreshToken, userDetails, setUserDetails, storageDataFetched, logout, login }}>
