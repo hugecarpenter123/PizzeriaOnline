@@ -50,21 +50,19 @@ public class StaticAppInfo {
 
     // PATHS to specific resource folders ----------------------------
     public String getUploadPizzaImgDir() {
-        return imageRootFolder + "/pizza";
+        return imageRootFolder + "\\pizza";
     }
     public String getUploadDrinkImgDir() {
-        return imageRootFolder + "/drink";
+        return imageRootFolder + "\\drink";
     }
     public String getUploadUserImgDir() {
-        return imageRootFolder + "/user";
+        return imageRootFolder + "\\user";
     }
-
     // END PATHS to specific resource folders ------------------------
 
     public String getDefaultPizzaImgUrl() {
         return getPizzaImgUrlPath() + "/pizza-default.jpg";
     }
-
     public String getDefaultDrinkImgUrl() {
         return getDrinkImgUrlPath() + "/drink-default.jpg";
     }

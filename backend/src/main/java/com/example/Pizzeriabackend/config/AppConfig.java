@@ -9,6 +9,7 @@ import com.example.Pizzeriabackend.repository.DrinkRepository;
 import com.example.Pizzeriabackend.repository.PizzaRepository;
 import com.example.Pizzeriabackend.repository.UserRepository;
 import com.example.Pizzeriabackend.util.StaticAppInfo;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;

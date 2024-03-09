@@ -18,10 +18,13 @@ import com.example.Pizzeriabackend.model.response.OrderedPizzaDto;
 import com.example.Pizzeriabackend.repository.*;
 import com.example.Pizzeriabackend.util.ServiceUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -49,6 +52,9 @@ public class OrderServiceImp implements OrderService {
 
     @Autowired
     private ServiceUtils serviceUtils;
+
+    @Autowired
+    private SseService notificationService;
 
 
     @Override
@@ -137,7 +143,7 @@ public class OrderServiceImp implements OrderService {
             createdOrder.setOrderedDrinks(new ArrayList<>());
         }
 
-        orderRepository.save(createdOrder);
+        notificationService.pushOrderNotification(createdOrder);
         return new OrderDTO(createdOrder);
     }
 
@@ -193,33 +199,6 @@ public class OrderServiceImp implements OrderService {
         return orderedDrinks;
     }
 
-    // TODO: 27.06.2023 remove, because same logic is implemented as DTO constructor
-    public OrderDTO generateOrderResponseObject(Order order) {
-        List<OrderedPizzaDto> orderedPizzaDtoList = order.getOrderedPizzas().stream().map(
-                        orderedPizza -> OrderedPizzaDto.builder()
-                                .name(orderedPizza.getPizza().getName())
-                                .size(orderedPizza.getSize().name())
-                                .quantity(orderedPizza.getQuantity())
-                                .build())
-                .toList();
-
-        List<OrderedDrinkDto> orderedDrinkDtoList = order.getOrderedDrinks().stream().map(
-                        orderedDrink -> OrderedDrinkDto.builder()
-                                .name(orderedDrink.getDrink().getName())
-                                .size(orderedDrink.getSize().name())
-                                .quantity(orderedDrink.getQuantity())
-                                .build())
-                .toList();
-
-        return OrderDTO.builder()
-                .orderId(order.getId())
-                .ordererName(order.getOrdererName())
-                .orderedPizzas(orderedPizzaDtoList)
-                .orderedDrinks(orderedDrinkDtoList)
-                .deliveryAddress(order.getDeliveryAddress())
-                .orderStatus(order.getStatus())
-                .build();
-    }
 
     @Override
     public OrderDTO getOrder(long id) {
@@ -259,6 +238,8 @@ public class OrderServiceImp implements OrderService {
 
         order.setStatus(orderStatusModel.getOrderStatus());
         orderRepository.save(order);
+
+        notificationService.pushOrderNotification(order);
     }
 
     @Override
@@ -291,4 +272,5 @@ public class OrderServiceImp implements OrderService {
     public void deleteAllOrders() {
         orderRepository.deleteAll();
     }
+
 }

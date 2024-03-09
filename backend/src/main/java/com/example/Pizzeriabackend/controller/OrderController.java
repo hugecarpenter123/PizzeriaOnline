@@ -5,6 +5,8 @@ import com.example.Pizzeriabackend.model.request.CreateOrderRequest;
 import com.example.Pizzeriabackend.model.request.OrderStatusRequest;
 import com.example.Pizzeriabackend.model.response.OrderDTO;
 import com.example.Pizzeriabackend.service.OrderService;
+import com.example.Pizzeriabackend.service.SseService;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -15,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 import java.util.Map;
@@ -26,6 +29,9 @@ public class OrderController {
 
     @Autowired
     private OrderService orderService;
+
+    @Autowired
+    private SseService sseService;
 
     @PostMapping
     @Operation(
@@ -131,9 +137,16 @@ public class OrderController {
             summary = "Update order status",
             responses = {@ApiResponse(description = "Order status updated", responseCode = "200")}
     )
+
     public ResponseEntity<Void> updateOrderRequest(@RequestBody OrderStatusRequest orderStatusRequest) {
         orderService.updateOrderStatus(orderStatusRequest);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping({"/subscribe", "/subscribe/{id}"})
+    @Hidden
+    public SseEmitter orderSubscription(@PathVariable(required = false) Long id) {
+        return sseService.orderSubscription(id);
     }
 
 }

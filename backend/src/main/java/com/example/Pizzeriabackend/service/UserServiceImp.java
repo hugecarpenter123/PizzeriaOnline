@@ -1,18 +1,19 @@
 package com.example.Pizzeriabackend.service;
 
-import com.example.Pizzeriabackend.config.JWT.service.JwtService;
 import com.example.Pizzeriabackend.config.JWT.model.AuthenticationRequest;
 import com.example.Pizzeriabackend.config.JWT.model.AuthenticationResponse;
-import com.example.Pizzeriabackend.entity.*;
+import com.example.Pizzeriabackend.config.JWT.service.JwtService;
+import com.example.Pizzeriabackend.entity.RefreshToken;
+import com.example.Pizzeriabackend.entity.User;
 import com.example.Pizzeriabackend.entity.enums.Role;
 import com.example.Pizzeriabackend.event.registration.RegistrationEvent;
 import com.example.Pizzeriabackend.exception.DateParsingException;
 import com.example.Pizzeriabackend.exception.GeneralBadRequestException;
 import com.example.Pizzeriabackend.exception.GeneralNotFoundException;
-import com.example.Pizzeriabackend.model.response.OrderDTO;
-import com.example.Pizzeriabackend.model.response.UserDetailsDTO;
 import com.example.Pizzeriabackend.model.request.CreateSuperuserRequest;
 import com.example.Pizzeriabackend.model.request.UserDetailsRequest;
+import com.example.Pizzeriabackend.model.response.OrderDTO;
+import com.example.Pizzeriabackend.model.response.UserDetailsDTO;
 import com.example.Pizzeriabackend.repository.PizzaRepository;
 import com.example.Pizzeriabackend.repository.RefreshTokenRepository;
 import com.example.Pizzeriabackend.repository.ReviewRepository;
@@ -62,6 +63,7 @@ public class UserServiceImp implements UserService {
     private ApplicationEventPublisher eventPublisher;
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
+
 
     @Override
     public void registerUser(UserDetailsRequest userDetailsRequest) {

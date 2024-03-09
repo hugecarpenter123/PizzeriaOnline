@@ -77,13 +77,20 @@ public class ImageServiceImp implements ImageService {
 
             byte[] bytes = image.getBytes();
             Files.write(imagePath, bytes);
-            return staticAppInfo.getUserImgUrlPath() + "/" + imageFileName;
+            String folderUrlPath = switch (imageFolder) {
+                case PIZZA -> staticAppInfo.getPizzaImgUrlPath();
+                case DRINK -> staticAppInfo.getDrinkImgUrlPath();
+                case USER -> staticAppInfo.getUserImgUrlPath();
+            };
+
+            return folderUrlPath + "/" + imageFileName;
 
         } catch (IOException e) {
             e.printStackTrace();
             throw new GeneralServerException("Failed to save the image");
         }
     }
+
 
     @Override
     public MediaType resolveMediaType(String imageName) {

@@ -41,6 +41,7 @@ public class ServiceUtils {
     public boolean hasWorkerPerms() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return authentication.getAuthorities().stream()
-                .anyMatch(auth -> auth.getAuthority().equals(Role.WORKER.name()));
+                .anyMatch(auth -> auth.getAuthority().equals(Role.WORKER.name()) ||
+                        auth.getAuthority().equals(Role.ADMIN.name()));
     }
 }
