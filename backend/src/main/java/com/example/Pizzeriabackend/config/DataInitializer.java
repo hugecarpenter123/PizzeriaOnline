@@ -34,8 +34,6 @@ public class DataInitializer implements CommandLineRunner {
             PizzaRepository pizzaRepository,
             DrinkRepository drinkRepository, ReviewRepository reviewRepository) {
         this.reviewRepository = reviewRepository;
-
-        System.out.println("Data initializer constructor called() -------------");
         this.userRepository = userRepository;
         this.pizzaRepository = pizzaRepository;
         this.ingredientRepository = ingredientRepository;
@@ -49,11 +47,11 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-//        createDrinks();
-//        createIngredients();
-//        createPizzas();
-//        createUsers();
-//        createReviews();
+        createDrinks();
+        createIngredients();
+        createPizzas();
+        createUsers();
+        createReviews();
     }
 
     private void createDrinks() {
