@@ -3,6 +3,7 @@ package com.example.Pizzeriabackend.config;
 import com.example.Pizzeriabackend.entity.*;
 import com.example.Pizzeriabackend.entity.enums.Role;
 import com.example.Pizzeriabackend.repository.*;
+import com.example.Pizzeriabackend.util.DateDeserializer;
 import com.example.Pizzeriabackend.util.StaticAppInfo;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
@@ -154,6 +155,7 @@ public class DataInitializer implements CommandLineRunner {
                 .street("Janusza")
                 .houseNumber("23")
                 .cityCode("12-123")
+                .dateOfBirth(DateDeserializer.parseDate("04-04-1998"))
                 .phoneNumber("111222333")
                 .role(Role.USER)
                 .build();

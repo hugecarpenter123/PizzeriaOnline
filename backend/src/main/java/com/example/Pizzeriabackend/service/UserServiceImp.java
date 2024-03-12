@@ -156,7 +156,6 @@ public class UserServiceImp implements UserService {
         String imageUrl = imageService.saveImage(image, StaticAppInfo.IMAGE_FOLDER.USER, imageName);
         user.setImageUrl(imageUrl);
         userRepository.save(user);
-
     }
 
     /**
