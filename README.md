@@ -3,10 +3,9 @@
 </p>
 <p>(Staff frontend is under development)</p>
 
-https://www.youtube.com/watch?v=wkhmERX4cZU
+https://drive.google.com/file/d/184CwsExBseBtXPaFgk1bBUcYAZ9qLGQ-/view?usp=sharing
 
-<a href="http://www.youtube.com/watch?feature=player_embedded&v=wkhmERX4cZU
-" target="_blank"><img src="http://img.youtube.com/vi/wkhmERX4cZU/0.jpg" 
+<a href="https://drive.google.com/file/d/184CwsExBseBtXPaFgk1bBUcYAZ9qLGQ-/view?usp=sharing"><img src="http://img.youtube.com/vi/wkhmERX4cZU/0.jpg" 
 alt="IMAGE ALT TEXT HERE" width="330" height="240" border="10" /></a>
 
 <h2 style="text-align: center">Used tools</h2>
