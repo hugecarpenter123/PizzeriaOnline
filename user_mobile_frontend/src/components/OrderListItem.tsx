@@ -1,15 +1,10 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Animated, StyleSheet } from 'react-native';
-import { AntDesign } from '@expo/vector-icons';
-import { UserOrder } from '../contexts/MainScreenContext';
-import { ElevationLevels } from 'react-native-paper/lib/typescript/types';
+import { AntDesign, FontAwesome } from '@expo/vector-icons';
+import React, { useState } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Collapsible from 'react-native-collapsible';
-import OrderHistoryItems from './OrderHistoryItems';
-import { FontAwesome } from '@expo/vector-icons';
+import { UserOrder } from '../contexts/MainScreenContext';
 import useDeleteOrder from '../hooks/useDeleteOrder';
-import { AppContext } from '../contexts/AppContext';
-import { CommonActions, NavigationProp, useNavigation } from '@react-navigation/native';
-import { RootStackParamList } from '../screens/AppStacks';
+import OrderHistoryItems from './OrderHistoryItems';
 
 type Props = {
     order: UserOrder,

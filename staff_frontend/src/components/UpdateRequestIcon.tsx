@@ -10,9 +10,13 @@ interface UpdateRequestIconProps {
 
 const UpdateRequestIcon: React.FC<UpdateRequestIconProps> = ({ notificationsCount, onPress, containerStyle }) => {
   return (
-    <TouchableOpacity onPress={onPress} style={[styles.container, containerStyle]}>
+    <TouchableOpacity
+      onPress={onPress}
+      style={[styles.container, containerStyle]}
+      activeOpacity={0.6}
+    >
       <View style={styles.iconContainer}>
-        <MaterialCommunityIcons name="update" size={24} color="black" />
+        <MaterialCommunityIcons name="update" size={34} color="black" />
         {notificationsCount > 0 && (
           <View style={styles.notificationBadge}>
             <Text style={styles.notificationText}>{notificationsCount}</Text>

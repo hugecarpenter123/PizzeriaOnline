@@ -1,34 +1,81 @@
-import React from 'react';
-import { View, TouchableOpacity, Text, StyleSheet, StyleProp, ViewStyle } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, TouchableOpacity, Text, StyleSheet, StyleProp, ViewStyle, FlatList, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { dateTimeParser } from '../utils/BackendDisplayMappers';
 
 interface NewOrderNotificationsIconProps {
   notificationsCount: number;
-  onPress: () => void;
   containerStyle?: StyleProp<ViewStyle>;
+  notificationItems: OrderNotificationItem[]
 }
 
-const NewOrderNotificationIcon: React.FC<NewOrderNotificationsIconProps> = ({ notificationsCount, onPress, containerStyle }) => {
+type OrderNotificationItem = {
+  onSelect: () => void,
+  dateTime: string,
+  orderType: string,
+}
+
+
+const NewOrderNotificationIcon: React.FC<NewOrderNotificationsIconProps> = ({ notificationsCount, containerStyle, notificationItems }) => {
+
+  const [expanded, setExpanded] = useState<boolean>(false);
+  const animatedHeight = useRef(new Animated.Value(0)).current;
+  const notificationFlatListItemHeight = 45;
+
+  const animateList = (toValue: number) => {
+    Animated.timing(animatedHeight, {
+      toValue,
+      duration: 100,
+      useNativeDriver: false,
+    }).start();
+  };
+
+
+  const onIconClick = () => {
+    animateList(expanded ? 0 : notificationItems.length * notificationFlatListItemHeight);
+    setExpanded(!expanded);
+  }
+
   return (
-    <TouchableOpacity onPress={onPress} style={[styles.container, containerStyle]}>
-      <View style={styles.iconContainer}>
-        <Ionicons name="notifications" size={24} color="black" /> {/* Ikona */}
+    <View style={[styles.container, containerStyle]}>
+      <TouchableOpacity
+        onPress={onIconClick}
+        style={styles.iconContainer}
+        activeOpacity={0.6}>
+        <Ionicons name="notifications" size={34} color="black" />
         {notificationsCount > 0 && (
           <View style={styles.notificationBadge}>
             <Text style={styles.notificationText}>{notificationsCount}</Text>
           </View>
         )}
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+      <Animated.View style={[styles.collapsableAbsolute, { height: animatedHeight }]}>
+        <FlatList
+          data={notificationItems}
+          keyExtractor={(_, index) => index.toString()}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={[styles.itemContainer, { height: notificationFlatListItemHeight }]}
+              activeOpacity={0.7}
+              onPress={item.onSelect}
+            >
+              <Text style={styles.newText}>nowe!</Text>
+              <Text style={styles.dateTimeText}>{dateTimeParser(item.dateTime)}</Text>
+              <Text>{item.orderType}</Text>
+            </TouchableOpacity>
+          )}
+        />
+      </Animated.View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    position: 'relative',
     marginRight: 10,
   },
   iconContainer: {
-    position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
     width: 40,
@@ -48,6 +95,26 @@ const styles = StyleSheet.create({
   notificationText: {
     color: 'white',
     fontWeight: 'bold',
+  },
+  collapsableAbsolute: {
+    position: 'absolute',
+    top: 50,
+    left: 0,
+    width: 290,
+    // backgroundColor: 'white',
+  },
+  itemContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'black',
+  },
+  newText: {
+    color: 'red',
+  },
+  dateTimeText: {
+    marginHorizontal: 30,
   },
 });
 

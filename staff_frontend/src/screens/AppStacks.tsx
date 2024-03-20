@@ -4,11 +4,13 @@ import { AppContext } from '../contexts/AppContext';
 import useAppInitializer from '../hooks/useAppInitializer';
 import LoginScreen from './LoginScreen';
 import StaffMainScreen from './StaffMainScreen';
+import OrderItemDetails from './OrderItemDetails';
 
 export type RootStackParamList = {
     LoginScreen: undefined;
     RegistrationScreen: undefined;
     StaffMainScreen: undefined;
+    OrderItemDetails: { id: number };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -34,6 +36,10 @@ function AppStacks() {
                 name="StaffMainScreen"
                 component={StaffMainScreen}
                 options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name="OrderItemDetails"
+                component={OrderItemDetails}
             />
         </Stack.Navigator>
     );

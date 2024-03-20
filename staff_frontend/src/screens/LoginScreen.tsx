@@ -73,7 +73,6 @@ export default function LoginScreen({ route, navigation }: Props) {
                 style={[
                     styles.input,
                     loginError ? { borderColor: "red" } : null,
-                    // colorScheme === 'dark' ? commonStyles.darkThemeText : commonStyles.lightThemeText
                 ]}
                 onChangeText={setLogin}
                 placeholder="Login"
@@ -83,7 +82,6 @@ export default function LoginScreen({ route, navigation }: Props) {
                 style={[
                     styles.input,
                     passwordError ? { borderColor: "red" } : null,
-                    // colorScheme === 'dark' ? commonStyles.darkThemeText : commonStyles.lightThemeText
                 ]}
                 onChangeText={setPassword}
                 placeholder="Password"
