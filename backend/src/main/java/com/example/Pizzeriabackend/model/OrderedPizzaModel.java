@@ -1,11 +1,8 @@
 package com.example.Pizzeriabackend.model;
 
-import com.example.Pizzeriabackend.entity.PizzaSizes;
+import com.example.Pizzeriabackend.entity.enums.PizzaSizes;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Data
 @AllArgsConstructor

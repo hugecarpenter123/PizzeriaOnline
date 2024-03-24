@@ -123,7 +123,11 @@ public class UserServiceImp implements UserService {
 
         RefreshToken refreshToken = jwtService.generateRefreshToken(user);
 
-        return AuthenticationResponse.builder().token(jwtToken).refreshToken(refreshToken.getToken()).userDetails(new UserDetailsDTO(user)).build();
+        return AuthenticationResponse.builder()
+                .token(jwtToken)
+                .refreshToken(refreshToken.getToken())
+                .userDetails(new UserDetailsDTO(user))
+                .build();
     }
 
     @Override

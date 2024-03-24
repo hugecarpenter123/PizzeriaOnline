@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -106,6 +107,17 @@ public class OrderController {
     )
     public ResponseEntity<Map<String, List<OrderDTO>>> getAllOrders() {
         List<OrderDTO> orders = orderService.getAllOrders();
+        return ResponseEntity.ok(Map.of("result", orders));
+    }
+
+    @GetMapping("/unfinished")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'WORKER')")
+    @Operation(
+            summary = "Get all unfinished orders for staff frontend application",
+            responses = {@ApiResponse(description = "Orders fetched", responseCode = "200")}
+    )
+    public ResponseEntity<Map<String, List<OrderDTO>>> getUnfinishedOrders() {
+        List<OrderDTO> orders = orderService.getUnfinishedOrders();
         return ResponseEntity.ok(Map.of("result", orders));
     }
 

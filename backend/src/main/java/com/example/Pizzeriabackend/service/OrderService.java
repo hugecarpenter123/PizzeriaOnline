@@ -17,4 +17,6 @@ public interface OrderService {
     List<OrderDTO> getUserOrders(long id);
     void updateOrderStatus(OrderStatusRequest orderStatusModel);
     OrderDTO getOrderByLookupId(String lookupId);
+    List<OrderDTO> getUnfinishedOrders();
+
 }

@@ -1,8 +1,16 @@
 package com.example.Pizzeriabackend.config;
 
 import com.example.Pizzeriabackend.entity.*;
+import com.example.Pizzeriabackend.entity.enums.DrinkSizes;
+import com.example.Pizzeriabackend.entity.enums.OrderType;
+import com.example.Pizzeriabackend.entity.enums.PizzaSizes;
 import com.example.Pizzeriabackend.entity.enums.Role;
+import com.example.Pizzeriabackend.model.request.OrderedDrinkModel;
+import com.example.Pizzeriabackend.model.request.CreateOrderRequest;
+import com.example.Pizzeriabackend.model.request.OrderedPizzaModel;
 import com.example.Pizzeriabackend.repository.*;
+import com.example.Pizzeriabackend.service.OrderService;
+import com.example.Pizzeriabackend.service.OrderServiceImp;
 import com.example.Pizzeriabackend.util.DateDeserializer;
 import com.example.Pizzeriabackend.util.StaticAppInfo;
 import org.springframework.boot.CommandLineRunner;
@@ -13,7 +21,9 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.IntStream;
 import java.util.stream.LongStream;
+import java.util.stream.Stream;
 
 @Component
 @Profile(value = "git-display")
@@ -29,13 +39,17 @@ public class DataInitializer implements CommandLineRunner {
     private final DrinkRepository drinkRepository;
     private final ReviewRepository reviewRepository;
     private final PasswordEncoder passwordEncoder;
+    private final OrderServiceImp orderService;
 
     public DataInitializer(
             UserRepository userRepository,
             IngredientRepository ingredientRepository,
             StaticAppInfo staticAppInfo,
             PizzaRepository pizzaRepository,
-            DrinkRepository drinkRepository, ReviewRepository reviewRepository, PasswordEncoder passwordEncoder) {
+            DrinkRepository drinkRepository,
+            ReviewRepository reviewRepository,
+            PasswordEncoder passwordEncoder,
+            OrderServiceImp orderService) {
         this.reviewRepository = reviewRepository;
         this.userRepository = userRepository;
         this.pizzaRepository = pizzaRepository;
@@ -43,6 +57,7 @@ public class DataInitializer implements CommandLineRunner {
         this.staticAppInfo = staticAppInfo;
         this.drinkRepository = drinkRepository;
         this.passwordEncoder = passwordEncoder;
+        this.orderService = orderService;
 
         pizzaImgNames = getFileNames(this.staticAppInfo.getUploadPizzaImgDir());
         drinkImgNames = getFileNames(this.staticAppInfo.getUploadDrinkImgDir());
@@ -56,6 +71,61 @@ public class DataInitializer implements CommandLineRunner {
         createPizzas();
         createUsers();
         createReviews();
+        createOrders();
+    }
+
+    private void createOrders() {
+//        Optional<User> optionalUser = userRepository.findById(1L);
+//        User user = optionalUser.orElse(null);
+//        if (user == null) return;
+        String[] namesArr = {"Maciej Brzuchacz", "Karolina Pudliszki", "Marcel Wałbrzych", "Sebastian Moniczka"};
+        String[] phonesArr = {"123123123", "345464723", "957625122", "070000654"};
+        String[] addressees = {"Majowa 23d, 44-234 Zabrze", "Lipna 23, 69-213 Stalingrad", "Malibu 88, 23-111 Katowice"};
+        Random random = new Random();
+
+        Long[] pizzaIds = pizzaRepository.findAll().stream().map(Pizza::getId).toArray(Long[]::new);
+        Long[] drinkIds = drinkRepository.findAll().stream().map(Drink::getId).toArray(Long[]::new);
+        PizzaSizes[] pizzaSizes = PizzaSizes.values();
+        DrinkSizes[] drinkSizes = DrinkSizes.values();
+
+        Stream.generate(() -> {
+                    int pizzasNumber = random.nextInt(1, 4);
+                    int drinksNumber = random.nextInt(1, 3);
+                    List<OrderedPizzaModel> orderedPizzaModels = Stream.generate(() -> {
+                                int pizzaQuantity = random.nextInt(1, 2);
+                                return new OrderedPizzaModel(
+                                        pizzaIds[random.nextInt(pizzaIds.length)],
+                                        pizzaSizes[random.nextInt(pizzaSizes.length)],
+                                        pizzaQuantity
+                                );
+                            })
+                            .limit(pizzasNumber)
+                            .toList();
+
+                    List<OrderedDrinkModel> orderedDrinkModels = Stream.generate(() -> {
+                                int drinkQuantity = random.nextInt(1, 2);
+                                return new OrderedDrinkModel(
+                                        drinkIds[random.nextInt(drinkIds.length)],
+                                        drinkQuantity,
+                                        drinkSizes[random.nextInt(drinkSizes.length)]
+                                );
+                            })
+                            .limit(drinksNumber)
+                            .toList();
+
+
+                    return CreateOrderRequest.builder()
+                            .orderType((List.of(OrderType.DELIVERY, OrderType.PICKUP).get(random.nextInt(0, 2))))
+                            .ordererName(namesArr[random.nextInt(namesArr.length)])
+                            .deliveryAddress(addressees[random.nextInt(addressees.length)])
+                            .phone(phonesArr[random.nextInt(phonesArr.length)])
+                            .orderedPizzas(orderedPizzaModels)
+                            .orderedDrinks(orderedDrinkModels)
+                            .build();
+                })
+                .limit(random.nextInt(4, 8))
+                .forEach(orderService::createOrderForInitialization);
+
     }
 
     private void createDrinks() {
@@ -110,7 +180,6 @@ public class DataInitializer implements CommandLineRunner {
                     .build();
 
             pizzaRepository.save(pizza);
-            System.out.println("\t-saving pizza: " + pizza);
         });
     }
 
@@ -138,12 +207,24 @@ public class DataInitializer implements CommandLineRunner {
 
     private void createUsers() {
         User admin = User.builder()
+                .name("Admino")
+                .surname("Domino")
                 .role(Role.ADMIN)
                 .email("admin@gmail.com")
-                .password("admin")
+                .password(passwordEncoder.encode("admin"))
                 .build();
 
         userRepository.save(admin);
+
+        User staffMember = User.builder()
+                .name("Elstaffo")
+                .surname("Membrano")
+                .role(Role.WORKER)
+                .email("staff@gmail.com")
+                .password(passwordEncoder.encode("staff"))
+                .build();
+
+        userRepository.save(staffMember);
 
         User user = User.builder()
                 .name("Ty")

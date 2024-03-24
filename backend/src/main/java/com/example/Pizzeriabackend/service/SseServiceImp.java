@@ -1,7 +1,8 @@
 package com.example.Pizzeriabackend.service;
 
 import com.example.Pizzeriabackend.entity.Order;
-import com.example.Pizzeriabackend.entity.Role;
+import com.example.Pizzeriabackend.exception.GeneralBadRequestException;
+import com.example.Pizzeriabackend.exception.InternalAppCode;
 import com.example.Pizzeriabackend.util.ServiceUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -62,7 +63,7 @@ public class SseServiceImp implements SseService {
 
             return emitter;
         } else {
-            return null;
+            throw new GeneralBadRequestException("Invalid event subscription", InternalAppCode.INVALID_EVENT_SUBSCRIPTION);
         }
     }
 }

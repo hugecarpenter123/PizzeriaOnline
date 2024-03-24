@@ -41,11 +41,7 @@ const AppContextProvider = ({ children }: Props) => {
   const { isConnected } = useInternetConnectivity();
 
   useEffect(() => {
-    // retrieve potential necessary data from storage on application boot
     setStorageDataFetched(true);
-    // set landscape mode
-
-
   }, [])
 
   const logout = useCallback(
@@ -61,6 +57,7 @@ const AppContextProvider = ({ children }: Props) => {
       setToken(token);
       setRefreshToken(refreshToken);
       setUserDetails(userDetails);
+      console.log(`AppContext.login()\n\t-token: ${token}\n\t-refreshToken${refreshToken}\n\t-email: ${userDetails.email}`)
     },
     []
   );

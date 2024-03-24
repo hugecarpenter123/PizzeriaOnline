@@ -12,7 +12,6 @@ export const userDetailsParams = {
     dateOfBirth: 'dateOfBirth',
 }
 
-
 export enum InternalAppCode {
     BAD_ACCESS_TOKEN = 'BAD_ACCESS_TOKEN',
     ACCESS_TOKEN_EXPIRED = 'ACCESS_TOKEN_EXPIRED',
@@ -24,6 +23,10 @@ export enum InternalAppCode {
     REQUEST_TIMED_OUT = 'REQUEST_TIMED_OUT',
     UNDEFINED_ERROR = "UNDEFINED_ERROR",
     BAD_JSON_RESPONSE = "BAD_JSON_RESPONSE",
+    FATAL_EVENT_ERROR = "FATAL_EVENT_ERROR",
+    BAD_EVENT_RESPONSE = "BAD_EVENT_RESPONSE",
+    EVENT_MESSAGE_ERROR = "EVENT_MESSAGE_ERROR",
+    INVALID_EVENT_SUBSCRIPTION = "INVALID_EVENT_SUBSCRIPTION",
 }
 
 export const commonStyles = StyleSheet.create({

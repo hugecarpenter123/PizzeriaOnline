@@ -13,19 +13,15 @@ import com.example.Pizzeriabackend.model.request.OrderStatusRequest;
 import com.example.Pizzeriabackend.model.request.OrderedDrinkModel;
 import com.example.Pizzeriabackend.model.request.OrderedPizzaModel;
 import com.example.Pizzeriabackend.model.response.OrderDTO;
-import com.example.Pizzeriabackend.model.response.OrderedDrinkDto;
-import com.example.Pizzeriabackend.model.response.OrderedPizzaDto;
 import com.example.Pizzeriabackend.repository.*;
 import com.example.Pizzeriabackend.util.ServiceUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -153,13 +149,12 @@ public class OrderServiceImp implements OrderService {
      * This list is then ready to set into given Order
      *
      * @param orderedPizzaModels takes parsed into given model JSON request body
-     * @param order              takes Order to which OrderedPizza is assigned
+     * @param order              takes Order to which OrderedPizza will be assigned
      * @return ready to set to an Order required List of OrderedPizzas (ManyToOne relationship)
      */
     private List<OrderedPizza> parseOrderedPizzaModel(List<OrderedPizzaModel> orderedPizzaModels, Order order) {
         List<OrderedPizza> orderedPizzas = new ArrayList<>();
         for (OrderedPizzaModel orderedPizzaModel : orderedPizzaModels) {
-            System.out.println("\t-> OrderedPizzaModel orderedPizzaModel : orderedPizzaModels");
             Pizza pizza = pizzaRepository.findById(orderedPizzaModel.getPizzaId()).orElseThrow();
             OrderedPizza orderedPizza = OrderedPizza.builder()
                     .order(order)
@@ -172,6 +167,46 @@ public class OrderServiceImp implements OrderService {
         }
 
         return orderedPizzas;
+    }
+
+    /**
+     * Method created for DataInitializer Bean without validation and with simplified form
+     * @param createOrderRequest simulated order creation request
+     */
+    public void createOrderForInitialization(CreateOrderRequest createOrderRequest) {
+        List<OrderedDrinkModel> orderedDrinkModels = createOrderRequest.getOrderedDrinks();
+        List<OrderedPizzaModel> orderedPizzaModels = createOrderRequest.getOrderedPizzas();
+
+        Order order = new Order();
+        order.setOrderType(createOrderRequest.getOrderType());
+        order.setStatus(OrderStatus.PENDING);
+        order.setLookupId(UUID.randomUUID().toString());
+        order.setOrdererName(createOrderRequest.getOrdererName());
+        order.setPhone(createOrderRequest.getPhone());
+
+        // if not-logged user has chosen DELIVERY, save address data, else address is not needed
+        if (createOrderRequest.getOrderType().equals(OrderType.DELIVERY)) {
+            order.setDeliveryAddress(createOrderRequest.getDeliveryAddress());
+        }
+
+        orderRepository.save(order);
+
+        order.setOrderedPizzas(
+                !orderedPizzaModels.isEmpty()
+                        ? parseOrderedPizzaModel(orderedPizzaModels, order)
+                        : Collections.emptyList()
+        );
+
+        order.setOrderedDrinks(
+                !orderedDrinkModels.isEmpty()
+                        ? parseOrderedDrinkModel(orderedDrinkModels, order)
+                        : Collections.emptyList()
+        );
+//        System.out.printf("\norder saved successfully: \n\tid:%s, \n\tpizzas: %s, \n\tdrinks: %s, \n\tordererName: %s" +
+//                "\n\torderType: %s\n\torderStatus: %s\n\taddress: %s\n",
+//                order.getId(), order.getOrderedPizzas().stream().map(op -> op.getPizza().getName()).toList(),
+//                order.getOrderedDrinks().stream().map(od -> od.getDrink().getName()).toList(),
+//                order.getOrdererName(), order.getOrderType(), order.getStatus(), order.getDeliveryAddress());
     }
 
     /**
@@ -220,7 +255,7 @@ public class OrderServiceImp implements OrderService {
     @Override
     public List<OrderDTO> getUserOrders(long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new  GeneralNotFoundException("User with provided id doesn't exist", InternalAppCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new GeneralNotFoundException("User with provided id doesn't exist", InternalAppCode.USER_NOT_FOUND));
         return user.getOrders().stream().map(OrderDTO::new).toList();
     }
 
@@ -248,6 +283,12 @@ public class OrderServiceImp implements OrderService {
                 () -> new GeneralNotFoundException("Order of this lookup id doesn't exist", InternalAppCode.RESOURCE_NOT_FOUND)
         );
         return new OrderDTO(order);
+    }
+
+    @Override
+    public List<OrderDTO> getUnfinishedOrders() {
+        return orderRepository.findByStatusNotIn(List.of(OrderStatus.COMPLETED, OrderStatus.CANCELLED))
+                .stream().map(OrderDTO::new).toList();
     }
 
     @Override

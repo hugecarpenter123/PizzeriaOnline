@@ -22,5 +22,7 @@ export const ApiUrls = {
 
     // orders
     POST_ORDER: `${API_BASE_URL}/order`,
-    CANCEL_ORDER: `${API_BASE_URL}/order/cancel` // +/id
+    CANCEL_ORDER: `${API_BASE_URL}/order/cancel`, // +/id
+    GET_UNFINISHED_ODERS: `${API_BASE_URL}/order/unfinished`,
+    GET_ORDER_EVENT_SUBSCRIPTION: `${API_BASE_URL}/order/subscribe`
 }

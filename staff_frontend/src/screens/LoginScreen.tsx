@@ -12,8 +12,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'LoginScreen'>;
 
 export default function LoginScreen({ route, navigation }: Props) {
     console.log("LoginScreen render")
-    const [login, setLogin] = useState<string>('');
-    const [password, setPassword] = useState<string>('')
+    const [login, setLogin] = useState<string>('staff@gmail.com'); // TODO: change later!
+    const [password, setPassword] = useState<string>('staff') // TODO: change later!
     const { loading, success, error, loginRequest } = useLogin();
     const [loginError, setLoginError] = useState<string>('');
     const [passwordError, setPasswordError] = useState<string>('');
@@ -24,14 +24,12 @@ export default function LoginScreen({ route, navigation }: Props) {
         if (error) {
             showToast(error, 0)
         }
-    }, [error]);
-
-    useEffect(() => {
         if (success) {
             showToast("Zalogowano", 0);
             navigation.replace("StaffMainScreen");
         }
-    }, [success])
+    }, [error, success]);
+
 
     useEffect(() => {
         setLoginError('');
@@ -53,10 +51,11 @@ export default function LoginScreen({ route, navigation }: Props) {
     }
 
     const onLoginPressed = () => {
-        navigation.replace("StaffMainScreen")
+        // navigation.replace("StaffMainScreen")
         if (!validateInputs()) {
             return;
         }
+
         const loginData = {
             email: login,
             password

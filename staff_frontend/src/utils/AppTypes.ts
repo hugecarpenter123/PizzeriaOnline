@@ -1,5 +1,5 @@
-export type UserOrder = {
-    order_id: string,
+export type Order = {
+    orderId: string,
     orderedPizzas: orderedPizza[],
     orderedDrinks: orderedDrink[],
     ordererName: string,
@@ -49,11 +49,6 @@ export enum PizzaSizes {
     BIG = "BIG"
 }
 
-export interface Order {
-    orderedPizzaList: orderedPizza[];
-    orderedDrinkList: orderedDrink[];
-}
-
 
 export interface Menu {
     pizzaList: Pizza[];
@@ -88,20 +83,6 @@ export type Drink = {
     bigSizePrice: number;
     imageUrl: string,
 };
-
-// type UserOrderPizza = {
-//     imageUrl: string,
-//     name: string,
-//     size: string,
-//     quantity: number,
-// }
-
-// type UserOrderDrink = {
-//     imageUrl: string,
-//     name: string,
-//     size: string,
-//     quantity: number,
-// }
 
 
 export enum OrderType {

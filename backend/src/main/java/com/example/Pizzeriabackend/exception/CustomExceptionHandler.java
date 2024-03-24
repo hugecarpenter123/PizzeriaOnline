@@ -124,4 +124,14 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
     }
     // END authentication & authentication errors ------------------------------------------------
 
+    @ExceptionHandler(GeneralEventException.class)
+    protected ResponseEntity<Object> handleGeneralEventException(GeneralEventException exception) {
+        ApiExceptionDetails exceptionDetails = new ApiExceptionDetails(
+                exception.getMessage(),
+                HttpStatus.FORBIDDEN,
+                exception.getInternalAppCode()
+        );
+        return new ResponseEntity<>(exceptionDetails, HttpStatus.FORBIDDEN);
+    }
+
 }

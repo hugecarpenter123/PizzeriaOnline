@@ -82,6 +82,22 @@ const useErrorInterceptor = (): ErrorInterceptorHookResult => {
                 setLoading(false);
                 setError("Czas oczekiwania na odpowiedź serwera przekroczony")
                 break;
+            case InternalAppCode.BAD_EVENT_RESPONSE:
+                setLoading(false);
+                setError("**Do zaimplementowania: BAD_EVENT_RESPONSE**")
+                break;
+            case InternalAppCode.EVENT_MESSAGE_ERROR:
+                setLoading(false);
+                setError("**Do zaimplementowania: server wysłał error event**")
+                break;
+            case InternalAppCode.FATAL_EVENT_ERROR:
+                setLoading(false);
+                setError("**Do zaimplementowania: FATAL_EVENT_RESPONSE**")
+                break;
+            case InternalAppCode.INVALID_EVENT_SUBSCRIPTION:
+                setLoading(false);
+                setError("Wydarzył się nieoczekiwany błąd")
+                break;
             default:
                 setLoading(false);
                 setError("Wydarzył się niezdefiniowany błąd, spróbuj ponownie później")

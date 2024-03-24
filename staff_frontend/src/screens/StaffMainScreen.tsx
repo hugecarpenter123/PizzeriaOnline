@@ -4,59 +4,122 @@ import { ScrollView, FlatList, SafeAreaView, StyleSheet, Text, View } from "reac
 import { useCallback, useEffect, useMemo, useState } from "react";
 import NewOrderNotificationIcon from "../components/NewOrderNotificationIcon";
 import UpdateRequestIcon from "../components/UpdateRequestIcon";
-import FlatListItem from "../components/FlatListItem";
-import { Order, UserOrder } from "../utils/AppTypes";
+import MainOrdersListItem from "../components/MainOrdersListItem";
+import { Order } from "../utils/AppTypes";
 import OrderEditInterface from "../components/OrderEditInterface";
 import DummyOrderData from "../utils/DummyOrderData";
+import useFetchOrders from "../hooks/useFetchOrders";
+import LogoutIcon from "../components/LogoutIcon";
 
 type Props = NativeStackScreenProps<RootStackParamList, 'StaffMainScreen'>;
 
 const StaffMainScreen = ({ route, navigation }: Props) => {
-    console.log("StaffMainScreen render---")
+    // console.log("StaffMainScreen()")
 
-    const [newOrderNotificationCount, setNewOrderNotificationCount] = useState<number>(0);
-    const [updateRequestCount, setUpdateRequestCount] = useState<number>(0);
-    const [newUncheckedUpdateRequests, setNewUncheckedUpdateRequests] = useState<any[] | null>(null);
-    const [selectedOrder, setSelectedOrder] = useState<UserOrder | null>(DummyOrderData[0]);
-    const [awaitingOrders, setAwaitingOrders] = useState<UserOrder[]>(DummyOrderData);
-    const [newUncheckedOrders, setNewUncheckedOrders] = useState<UserOrder[]>([]);
+    /** TODO: implement */
+    const [newUncheckedUpdateRequests, setNewUncheckedUpdateRequests] = useState<any[]>([]);
 
-    const data = useMemo(() => {
-        return awaitingOrders.map((awaitingOrder) => {
+    /**
+     * State is used in:
+     * -EditInterfaceComponent to dispaly order details
+     * -main order list, to highlight currently selected order
+     */
+    const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+
+    /**
+     * State containing  all awaiting orders.
+     */
+    const [awaitingOrders, setAwaitingOrders] = useState<Order[]>([]);
+
+    /**
+     * State of all unchecked by staff member newly arrived orders. State is used to:
+     * -highlight given orders in the main list
+     * -display in notification component as a list of selectable list items
+     * -delete highlight from list item when clicked for the first time
+     */
+    const [newUncheckedOrders, setNewUncheckedOrders] = useState<Order[]>([]);
+    const { loading, fetchOrders } = useFetchOrders();
+
+    /**
+     * Memoized variable that is passed as a prop to navigation icon component which displays
+     * the formatted data in form of a FlatList and enables selecting from there.
+     */
+    const notificationOrdersData = useMemo(() => {
+        console.log("data for notification component is being calculated...")
+        return newUncheckedOrders.map((order) => {
             return {
-                onSelect: () => onOrderItemSelect(awaitingOrder),
-                dateTime: awaitingOrder.createdAt,
-                orderType: awaitingOrder.orderType,
+                onSelect: () => onOrderItemSelect(order),
+                dateTime: order.createdAt,
+                orderType: order.orderType,
             };
         });
-    }, [awaitingOrders]);
+    }, [newUncheckedOrders]);
 
-
-    const onOrderItemSelect = useCallback((order: UserOrder) => {
-        console.log("onOrderItemSelect()")
-        setSelectedOrder(order);
+    /**
+     * OnMount method that fetches all orders, sets them to both unchecked and awaiting orders states.
+     */
+    useEffect(() => {
+        const callback = (orders: Order[]) => {
+            setAwaitingOrders(orders);
+            setNewUncheckedOrders(orders);
+        }
+        fetchOrders(callback);
     }, [])
 
+    
+    /**
+     * after selecting (in any way) an order, it sets the "selectedOrder" status. 
+     * As a result, it highlights the item on the main list, displays the data in the edit panel and
+     * if the order is opened for the first time, removes the order from the "newUncheckedOrders" state
+     */
+    const onOrderItemSelect = useCallback((newSelectedOrder: Order) => {
+        console.log("onOrderItemSelect()")
+        setSelectedOrder(newSelectedOrder);
+        setNewUncheckedOrders((uncheckedOrders) => uncheckedOrders.filter(uncheckedOrder => uncheckedOrder.orderId !== newSelectedOrder.orderId));
+    }, [])
+
+    // TODO: to implement
     const onUpdateRequestNotificationPress = () => {
 
     }
 
     const clearSelectedOrder = useCallback(() => {
-        console.log("clearSelectedOrder()")
         setSelectedOrder(null);
     }, [])
 
+    const isListItemUnchecked = useCallback((listItem: Order) => {
+        return newUncheckedOrders.find((uncheckedOrder) => uncheckedOrder.orderId === listItem.orderId) != undefined;
+    }, [newUncheckedOrders]);
+
+    const isOrderCurrentlySelected = useCallback((order: Order) => {
+        return selectedOrder != null && selectedOrder.orderId === order.orderId;
+    }, [selectedOrder])
+
+
     return (
         <SafeAreaView style={styles.mainContainer}>
-            <View style={styles.notificationsContainer}>
-                <NewOrderNotificationIcon notificationsCount={21} notificationItems={data} />
-                <UpdateRequestIcon notificationsCount={37} onPress={onUpdateRequestNotificationPress} />
+            <View style={styles.navPanel}>
+                <View style={styles.notificationContainer}>
+                    <NewOrderNotificationIcon notificationsCount={newUncheckedOrders.length} notificationItems={notificationOrdersData} />
+                    <UpdateRequestIcon notificationsCount={newUncheckedUpdateRequests.length} onPress={onUpdateRequestNotificationPress} />
+                </View>
+                <View>
+                    <LogoutIcon />
+                </View>
             </View>
             <View style={styles.bodyContainer}>
                 <FlatList
                     data={awaitingOrders}
-                    keyExtractor={((item) => item.order_id)}
-                    renderItem={FlatListItem}
+                    keyExtractor={(item, index) => item.orderId}
+                    renderItem={({ item, index }) => (
+                        <MainOrdersListItem
+                            item={item}
+                            key={index}
+                            isUnchecked={isListItemUnchecked(item)}
+                            onPress={() => onOrderItemSelect(item)}
+                            isSelected={isOrderCurrentlySelected(item)}
+                        />
+                    )}
                     style={styles.flatList}
                 />
                 <OrderEditInterface
@@ -75,21 +138,39 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: 'light-gray',
     },
-    notificationsContainer: {
+    navPanel: {
         flexDirection: 'row',
         backgroundColor: 'wheat',
+
+        borderWidth: 2,
+        borderColor: '#c2ad44',
+        borderRadius: 2,
+        padding: 2,
+
         overflow: 'visible',
         zIndex: 1,
+        justifyContent: 'space-between',
+        alignItems: 'center',
     },
     bodyContainer: {
         flex: 1,
         flexDirection: 'row',
+        marginTop: 5,
     },
     flatList: {
-        backgroundColor: 'aqua',
+        // backgroundColor: 'aqua',
         flexGrow: 2,
+        marginEnd: 5,
     },
     orderInterfaceContainer: {
+        // backgroundColor: 'pink',
+    },
+    notificationContainer: {
+        flexDirection: 'row',
+    },
+    utilityContainer: {
+        flexDirection: 'row',
+        alignItems: 'flex-end',
     }
 });
 

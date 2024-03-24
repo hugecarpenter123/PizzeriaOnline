@@ -1,13 +1,13 @@
 import React from "react";
 import { ScrollView, StyleProp, StyleSheet, Text, View, ViewStyle, TouchableOpacity } from "react-native";
-import { UserOrder } from "../utils/AppTypes";
+import { Order } from "../utils/AppTypes";
 import { FontAwesome } from '@expo/vector-icons';
 import { dateTimeParser, orderTypeMapper, statusMapper } from "../utils/BackendDisplayMappers";
 import OrderItemsDetailsList from "./OrderItemsDetailsList";
 
 type Props = {
     containerStyle?: StyleProp<ViewStyle>,
-    order: UserOrder | null,
+    order: Order | null,
     onClearPanel: () => void,
 }
 
@@ -33,7 +33,7 @@ const OrderEditInterface: React.FC<Props> = ({ containerStyle, order, onClearPan
                 </TouchableOpacity>
                 <View style={styles.row}>
                     <Text style={[styles.bold, styles.text]}>Nr zamówienia: </Text>
-                    <Text style={[styles.text]}>{order.order_id}</Text>
+                    <Text style={[styles.text]}>{order.orderId}</Text>
                 </View>
                 <View style={styles.row}>
                     <Text style={[styles.bold, styles.text]}>Czas złożenia zamówienia: </Text>

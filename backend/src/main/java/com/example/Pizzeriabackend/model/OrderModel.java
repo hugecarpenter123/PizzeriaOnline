@@ -1,8 +1,6 @@
 package com.example.Pizzeriabackend.model;
 
-import com.example.Pizzeriabackend.entity.OrderType;
-import com.example.Pizzeriabackend.entity.OrderedDrink;
-import com.example.Pizzeriabackend.entity.OrderedPizza;
+import com.example.Pizzeriabackend.entity.enums.OrderType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

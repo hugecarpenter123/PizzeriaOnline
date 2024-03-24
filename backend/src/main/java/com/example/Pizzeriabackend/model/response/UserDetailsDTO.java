@@ -53,4 +53,5 @@ public class UserDetailsDTO {
     private List<OrderDTO> getOrderDtoList(List<Order> orders) {
         return orders.stream().map(OrderDTO::new).toList();
     }
+
 }

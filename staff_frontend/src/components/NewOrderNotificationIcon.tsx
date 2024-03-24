@@ -1,7 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, StyleProp, ViewStyle, FlatList, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { dateTimeParser } from '../utils/BackendDisplayMappers';
+import Collapsible from 'react-native-collapsible';
 
 interface NewOrderNotificationsIconProps {
   notificationsCount: number;
@@ -30,11 +31,15 @@ const NewOrderNotificationIcon: React.FC<NewOrderNotificationsIconProps> = ({ no
     }).start();
   };
 
+  useEffect(() => {
+    expanded && animateList(notificationItems.length * notificationFlatListItemHeight);
+  }, [notificationsCount])
 
   const onIconClick = () => {
     animateList(expanded ? 0 : notificationItems.length * notificationFlatListItemHeight);
     setExpanded(!expanded);
   }
+
 
   return (
     <View style={[styles.container, containerStyle]}>
@@ -51,13 +56,14 @@ const NewOrderNotificationIcon: React.FC<NewOrderNotificationsIconProps> = ({ no
       </TouchableOpacity>
       <Animated.View style={[styles.collapsableAbsolute, { height: animatedHeight }]}>
         <FlatList
+          style={styles.collapsibleFlatList}
           data={notificationItems}
           keyExtractor={(_, index) => index.toString()}
           renderItem={({ item }) => (
             <TouchableOpacity
               style={[styles.itemContainer, { height: notificationFlatListItemHeight }]}
               activeOpacity={0.7}
-              onPress={item.onSelect}
+              onPress={(item.onSelect)}
             >
               <Text style={styles.newText}>nowe!</Text>
               <Text style={styles.dateTimeText}>{dateTimeParser(item.dateTime)}</Text>
@@ -98,16 +104,20 @@ const styles = StyleSheet.create({
   },
   collapsableAbsolute: {
     position: 'absolute',
-    top: 50,
+    top: 45,
     left: 0,
-    width: 290,
-    // backgroundColor: 'white',
+    width: 300,
+    maxHeight: 500,
+    backgroundColor: 'white',
+    borderBottomLeftRadius: 4,
+    borderBottomRightRadius: 4,
   },
   itemContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 10,
-    borderBottomWidth: 1,
+    borderWidth: 1,
+    borderTopWidth: 0,
     borderBottomColor: 'black',
   },
   newText: {
@@ -116,6 +126,8 @@ const styles = StyleSheet.create({
   dateTimeText: {
     marginHorizontal: 30,
   },
+  collapsibleFlatList: {
+  }
 });
 
 export default NewOrderNotificationIcon;
