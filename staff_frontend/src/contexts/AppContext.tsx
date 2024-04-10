@@ -9,7 +9,8 @@ type AppContextProps = {
   refreshToken: string | null,
   userDetails: UserDetails | null,
   setUserDetails: (userData: UserDetails | null) => void,
-  storageDataFetched: boolean,
+  appInitialized: boolean,
+  loginFinalized: boolean,
   logout: () => void,
   login: (token: string, refreshToken: string, userDetails: UserDetails) => void,
 }
@@ -22,7 +23,8 @@ export const AppContext = createContext<AppContextProps>({
   userDetails: null,
   setToken: () => { },
   setUserDetails: () => { },
-  storageDataFetched: false,
+  appInitialized: false,
+  loginFinalized: false,
   logout: () => { },
   login: () => { }
 });
@@ -37,11 +39,19 @@ const AppContextProvider = ({ children }: Props) => {
   const [token, setToken] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
-  const [storageDataFetched, setStorageDataFetched] = useState<boolean>(false);
+  const [appInitialized, setAppInitialized] = useState<boolean>(false);
+  const [loginFinalized, setLoginFinalized] = useState<boolean>(false);
   const { isConnected } = useInternetConnectivity();
 
   useEffect(() => {
-    setStorageDataFetched(true);
+    // actions before fading of splashScreen
+    if (token && refreshToken && isConnected) {
+      setLoginFinalized(true);
+    }
+  }, [token, refreshToken, isConnected])
+
+  useEffect(() => {
+    setAppInitialized(true);
   }, [])
 
   const logout = useCallback(
@@ -54,16 +64,16 @@ const AppContextProvider = ({ children }: Props) => {
 
   const login = useCallback(
     (token: string, refreshToken: string, userDetails: UserDetails) => {
+      // console.log(`AppContext.login()\n\t-token: ${token}\n\t-refreshToken${refreshToken}\n\t-email: ${userDetails.email}`)
       setToken(token);
       setRefreshToken(refreshToken);
       setUserDetails(userDetails);
-      console.log(`AppContext.login()\n\t-token: ${token}\n\t-refreshToken${refreshToken}\n\t-email: ${userDetails.email}`)
     },
     []
   );
 
   return (
-    <AppContext.Provider value={{ isConnected, token, setToken, refreshToken, userDetails, setUserDetails, storageDataFetched, logout, login }}>
+    <AppContext.Provider value={{ isConnected, token, setToken, refreshToken, userDetails, setUserDetails, appInitialized, loginFinalized, logout, login }}>
       {children}
     </AppContext.Provider>
   )

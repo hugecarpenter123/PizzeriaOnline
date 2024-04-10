@@ -3,7 +3,7 @@ package com.example.Pizzeriabackend.service;
 import com.example.Pizzeriabackend.exception.GeneralBadRequestException;
 import com.example.Pizzeriabackend.exception.GeneralNotFoundException;
 import com.example.Pizzeriabackend.exception.GeneralServerException;
-import com.example.Pizzeriabackend.util.StaticAppInfo;
+import com.example.Pizzeriabackend.model.util.StaticAppInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -11,9 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.print.attribute.standard.Media;
-
-import static com.example.Pizzeriabackend.util.StaticAppInfo.IMAGE_FOLDER;
+import static com.example.Pizzeriabackend.model.util.StaticAppInfo.IMAGE_FOLDER;
 
 import java.io.IOException;
 import java.nio.file.Files;

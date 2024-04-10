@@ -16,7 +16,7 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function AppStacks() {
-    const { token, storageDataFetched } = useContext(AppContext);
+    const { token, appInitialized: storageDataFetched } = useContext(AppContext);
     const { appInitialized, SplashScreen } = useAppInitializer();
 
     if (!storageDataFetched || !appInitialized) {

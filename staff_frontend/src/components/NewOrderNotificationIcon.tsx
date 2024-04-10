@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { View, TouchableOpacity, Text, StyleSheet, StyleProp, ViewStyle, FlatList, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, FlatList, StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { dateTimeParser } from '../utils/BackendDisplayMappers';
-import Collapsible from 'react-native-collapsible';
+
 
 interface NewOrderNotificationsIconProps {
   notificationsCount: number;
@@ -75,7 +75,6 @@ const NewOrderNotificationIcon: React.FC<NewOrderNotificationsIconProps> = ({ no
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     position: 'relative',

@@ -11,7 +11,7 @@ import com.example.Pizzeriabackend.model.request.ReviewRequest;
 import com.example.Pizzeriabackend.repository.PizzaRepository;
 import com.example.Pizzeriabackend.repository.ReviewRepository;
 import com.example.Pizzeriabackend.repository.UserRepository;
-import com.example.Pizzeriabackend.util.ServiceUtils;
+import com.example.Pizzeriabackend.model.util.ServiceUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;

@@ -1,12 +1,11 @@
-import React, { useState, useEffect, useContext } from "react";
-import { Image, View, Text, StyleSheet, TouchableOpacity, TextInput, useColorScheme } from "react-native";
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from "./AppStacks";
-import useLogin from "../hooks/useLogin";
+import React, { useContext, useEffect, useState } from "react";
+import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import LoadingIndicator from "../components/LoadingIndicator";
+import { AppContext } from "../contexts/AppContext";
+import useLogin from "../hooks/useLogin";
 import showToast from "../utils/showToast";
-import { Entypo } from '@expo/vector-icons';
-import { commonStyles } from "../utils/StaticAppInfo";
+import { RootStackParamList } from "./AppStacks";
 
 type Props = NativeStackScreenProps<RootStackParamList, 'LoginScreen'>;
 
@@ -17,18 +16,21 @@ export default function LoginScreen({ route, navigation }: Props) {
     const { loading, success, error, loginRequest } = useLogin();
     const [loginError, setLoginError] = useState<string>('');
     const [passwordError, setPasswordError] = useState<string>('');
-
-    // const colorScheme = useColorScheme();
+    /**
+     * State indicating readiness to navigate to main screen whose onMount utilizes token to fetch data.
+     * Token must be sucessfully assigned to a state to flawelessly perform fetch.
+     */
+    const { loginFinalized } = useContext(AppContext);
 
     useEffect(() => {
         if (error) {
             showToast(error, 0)
         }
-        if (success) {
+        if (success && loginFinalized) {
             showToast("Zalogowano", 0);
             navigation.replace("StaffMainScreen");
         }
-    }, [error, success]);
+    }, [error, success, loginFinalized]);
 
 
     useEffect(() => {
@@ -51,7 +53,6 @@ export default function LoginScreen({ route, navigation }: Props) {
     }
 
     const onLoginPressed = () => {
-        // navigation.replace("StaffMainScreen")
         if (!validateInputs()) {
             return;
         }

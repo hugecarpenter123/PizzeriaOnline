@@ -3,7 +3,6 @@ package com.example.Pizzeriabackend.service;
 import com.example.Pizzeriabackend.entity.*;
 import com.example.Pizzeriabackend.entity.enums.OrderStatus;
 import com.example.Pizzeriabackend.entity.enums.OrderType;
-import com.example.Pizzeriabackend.entity.enums.Role;
 import com.example.Pizzeriabackend.exception.GeneralBadRequestException;
 import com.example.Pizzeriabackend.exception.GeneralNotFoundException;
 import com.example.Pizzeriabackend.exception.InternalAppCode;
@@ -14,10 +13,8 @@ import com.example.Pizzeriabackend.model.request.OrderedDrinkModel;
 import com.example.Pizzeriabackend.model.request.OrderedPizzaModel;
 import com.example.Pizzeriabackend.model.response.OrderDTO;
 import com.example.Pizzeriabackend.repository.*;
-import com.example.Pizzeriabackend.util.ServiceUtils;
+import com.example.Pizzeriabackend.model.util.ServiceUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -55,9 +52,7 @@ public class OrderServiceImp implements OrderService {
 
     @Override
     public OrderDTO createOrder(CreateOrderRequest createOrderRequest) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        boolean isLoggedIn = authentication.getAuthorities().stream().anyMatch(x -> x.getAuthority().equals(Role.USER.name()));
+        boolean isLoggedIn = serviceUtils.hasUserPerms();
 
         boolean atLeastOneOrder = ((createOrderRequest.getOrderedPizzas() != null && !createOrderRequest.getOrderedPizzas().isEmpty())
                 || (createOrderRequest.getOrderedDrinks() != null && !createOrderRequest.getOrderedDrinks().isEmpty()));
@@ -89,7 +84,7 @@ public class OrderServiceImp implements OrderService {
         order.setStatus(OrderStatus.PENDING);
         order.setLookupId(UUID.randomUUID().toString());
         if (isLoggedIn) {
-            User user = userRepository.findByEmail(email);
+            User user = serviceUtils.getLoggedUser();
             order.setUser(user);
             order.setOrdererName(user.getName() + " " + user.getSurname());
 

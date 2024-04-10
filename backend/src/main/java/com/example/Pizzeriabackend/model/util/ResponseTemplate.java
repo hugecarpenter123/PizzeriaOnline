@@ -1,4 +1,4 @@
-package com.example.Pizzeriabackend.util;
+package com.example.Pizzeriabackend.model.util;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

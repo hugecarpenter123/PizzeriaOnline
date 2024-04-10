@@ -15,9 +15,8 @@ import com.example.Pizzeriabackend.repository.PizzaRepository;
 import com.example.Pizzeriabackend.repository.RefreshTokenRepository;
 import com.example.Pizzeriabackend.repository.ReviewRepository;
 import com.example.Pizzeriabackend.repository.UserRepository;
-import com.example.Pizzeriabackend.util.ServiceUtils;
-import com.example.Pizzeriabackend.util.StaticAppInfo;
-import org.junit.Assert;
+import com.example.Pizzeriabackend.model.util.ServiceUtils;
+import com.example.Pizzeriabackend.model.util.StaticAppInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,7 +31,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;

@@ -115,8 +115,6 @@ export type Props = {
     children: ReactNode;
 };
 
-
-// todo: PROBABLY SWTICH TO REDUCE FUNCTION
 export const MainScreenContext = createContext<MainScreenContextProps>({} as MainScreenContextProps);
 
 export type MainScreenContextProps = {
@@ -195,8 +193,6 @@ const MainScreenContextProvider = ({ children }: Props) => {
 
     const addPizzaOrder = (pizzaId: number, size: number) => {
         setCart((prevCart) => {
-            console.log("prevCart is:")
-            console.log(prevCart);
             const updatedCart = { ...prevCart };
             let pizzaQuantityUpdated = false;
 

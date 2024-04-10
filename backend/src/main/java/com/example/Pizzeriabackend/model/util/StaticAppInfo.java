@@ -1,4 +1,4 @@
-package com.example.Pizzeriabackend.util;
+package com.example.Pizzeriabackend.model.util;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

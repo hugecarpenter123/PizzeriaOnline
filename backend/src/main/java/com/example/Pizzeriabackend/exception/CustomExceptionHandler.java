@@ -1,4 +1,5 @@
 package com.example.Pizzeriabackend.exception;
+import io.jsonwebtoken.MalformedJwtException;
 import org.springframework.security.access.AccessDeniedException;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.SignatureException;
@@ -102,11 +103,23 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(ExpiredJwtException.class)
     protected ResponseEntity<Object> handleExpiredJwtException(ExpiredJwtException exception) {
-        logger.error("ExpiredJwtException has happened HERE");
+        logger.error("ExpiredJwtException");
         ApiExceptionDetails exceptionDetails = new ApiExceptionDetails(
                 exception.getMessage(),
                 HttpStatus.FORBIDDEN,
                 InternalAppCode.ACCESS_TOKEN_EXPIRED
+        );
+
+        System.out.println(exceptionDetails);
+        return new ResponseEntity<>(exceptionDetails, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(MalformedJwtException.class)
+    protected ResponseEntity<Object> handleMalformedJwtException(MalformedJwtException exception) {
+        ApiExceptionDetails exceptionDetails = new ApiExceptionDetails(
+                exception.getMessage(),
+                HttpStatus.FORBIDDEN,
+                InternalAppCode.BAD_ACCESS_TOKEN
         );
 
         System.out.println(exceptionDetails);

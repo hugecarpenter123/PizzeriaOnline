@@ -3,17 +3,11 @@ package com.example.Pizzeriabackend.repository;
 import com.example.Pizzeriabackend.entity.RefreshToken;
 import com.example.Pizzeriabackend.entity.User;
 import com.example.Pizzeriabackend.entity.enums.Role;
-import com.example.Pizzeriabackend.util.StaticAppInfo;
-import org.junit.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ActiveProfiles;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

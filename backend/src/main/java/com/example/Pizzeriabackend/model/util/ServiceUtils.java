@@ -1,4 +1,4 @@
-package com.example.Pizzeriabackend.util;
+package com.example.Pizzeriabackend.model.util;
 
 import com.example.Pizzeriabackend.entity.enums.Role;
 import com.example.Pizzeriabackend.entity.User;

@@ -10,6 +10,9 @@ import OrderEditInterface from "../components/OrderEditInterface";
 import DummyOrderData from "../utils/DummyOrderData";
 import useFetchOrders from "../hooks/useFetchOrders";
 import LogoutIcon from "../components/LogoutIcon";
+import useOrdersListener from "../hooks/useOrdersListener";
+import useOrderSubscription from "../hooks/useOrderSubscription";
+import useOrdersListener2 from "../hooks/useOrdersListener2";
 
 type Props = NativeStackScreenProps<RootStackParamList, 'StaffMainScreen'>;
 
@@ -55,6 +58,10 @@ const StaffMainScreen = ({ route, navigation }: Props) => {
         });
     }, [newUncheckedOrders]);
 
+    // const { subscribe } = useOrdersListener();
+    const { subscribe } = useOrdersListener2();
+    // const { subscribe } = useOrderSubscription();
+
     /**
      * OnMount method that fetches all orders, sets them to both unchecked and awaiting orders states.
      */
@@ -64,9 +71,13 @@ const StaffMainScreen = ({ route, navigation }: Props) => {
             setNewUncheckedOrders(orders);
         }
         fetchOrders(callback);
+
+        const updateState = (order: Order) => setNewUncheckedOrders((prev) => [...prev, order]);
+        subscribe(updateState);
+
     }, [])
 
-    
+
     /**
      * after selecting (in any way) an order, it sets the "selectedOrder" status. 
      * As a result, it highlights the item on the main list, displays the data in the edit panel and

@@ -18,7 +18,6 @@ type LoginData = {
     password: string,
 }
 
-// TODO: catch parse error
 
 const useLogin = (): LoginHookResult => {
     const [loading, setLoading] = useState(false);
@@ -56,17 +55,14 @@ const useLogin = (): LoginHookResult => {
                 throw new FetchError({ errorMessage, internalAppCode });
             }
 
-            // If response is empty throw
             if (!response?.headers?.get('Content-Type')?.includes('application/json')) {
                 errorMessage = "successfull request, but no JSON";
                 internalAppCode = InternalAppCode.BAD_JSON_RESPONSE;
                 throw new FetchError({ errorMessage, internalAppCode });
             }
 
-            // Parse the response data
             const responseData = await response.json();
 
-            // Check if the response contains the expected "result" key
             if (
                 !responseData.hasOwnProperty('token') ||
                 !responseData.hasOwnProperty('refreshToken') ||
@@ -77,7 +73,6 @@ const useLogin = (): LoginHookResult => {
                 throw new FetchError({ errorMessage, internalAppCode });
             }
 
-            // here all necessary data parsed successfully --------------------
             const userDetails = responseData.userDetails;
             const token = responseData.token;
             const refreshToken = responseData.refreshToken;

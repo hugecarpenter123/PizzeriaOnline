@@ -31,6 +31,7 @@ const useFetchOrders = (): FetchOrdersResult => {
     }, [error]);
 
     const fetchOrders = async (stateChangeCallback: FetchOrdersArg, newToken?: string): Promise<void> => {
+        console.log("---calling fetchOrders with token: " + token)
         let internalAppCode = null;
         let errorMessage = null;
 

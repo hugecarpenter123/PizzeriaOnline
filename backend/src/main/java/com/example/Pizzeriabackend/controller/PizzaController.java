@@ -2,7 +2,7 @@ package com.example.Pizzeriabackend.controller;
 
 import com.example.Pizzeriabackend.model.response.PizzaDTO;
 import com.example.Pizzeriabackend.service.PizzaService;
-import com.example.Pizzeriabackend.util.ResponseTemplate;
+import com.example.Pizzeriabackend.model.util.ResponseTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -13,15 +13,13 @@ type OrderListenerResult = {
     loading: boolean,
     error: string | null,
     success: boolean,
-    ordersListener: () => void,
+    subscribe: (clb: (order: Order) => void) => void,
 }
 
-type Props = {
-    updateState: (order: Order) => void;
-}
+type CallbackArg = (order: Order) => void
 
 // todo: trzeba zakutalizwać stan w kontekście aplikacji
-const useOrdersListener = ({ updateState }: Props): OrderListenerResult => {
+const useOrdersListener = (): OrderListenerResult => {
     const { token } = useContext(AppContext);
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
@@ -34,7 +32,8 @@ const useOrdersListener = ({ updateState }: Props): OrderListenerResult => {
         }
     }, [error]);
 
-    const ordersListener = async (newToken?: string): Promise<void> => {
+    const subscribe = async (callbackArg: CallbackArg, newToken?: string): Promise<void> => {
+
         let internalAppCode = null;
         let errorMessage = null;
 
@@ -50,6 +49,7 @@ const useOrdersListener = ({ updateState }: Props): OrderListenerResult => {
 
             async onopen(response) {
                 if (response.ok && response.headers.get('content-type') === EventStreamContentType) {
+                    console.log("successfully subscribed to orderListener")
                     return;
                 } else if (response.status >= 400 && response.status < 500 && response.status !== 429) {
 
@@ -65,6 +65,14 @@ const useOrdersListener = ({ updateState }: Props): OrderListenerResult => {
             },
             onmessage(msg) {
                 console.log(`onmessage(msg): \n\t-msg.event: ${msg.event}\n\t-msg.data: ${JSON.stringify(msg.data)}\n\t-msg.id: ${msg.id}`)
+                if (msg.event === "orderEvent") {
+                    // all fine, main logic there ---------------
+                    const order = JSON.parse(msg.data);
+                    console.log("parsed order data: " + order)
+                    console.log("stringified order data: " + JSON.stringify(order));
+
+                    // updateNewOrdersStateCallback()
+                }
 
                 if (msg.event === 'FatalError') {
                     internalAppCode = InternalAppCode.EVENT_MESSAGE_ERROR // do zmiany
@@ -90,13 +98,15 @@ const useOrdersListener = ({ updateState }: Props): OrderListenerResult => {
 
                 console.error(`InernalAppCode: ${internalAppCode}`);
                 console.error(`fetchUserOrders error: ${errorMessage}`);
-                errorInterceptor(internalAppCode, setError, setLoading, ordersListener);
+                const callback = (newToken: string) => subscribe(callbackArg, newToken)
+
+                errorInterceptor(internalAppCode, setError, setLoading, callback);
             },
         });
 
     };
 
-    return { loading, error, success, ordersListener };
+    return { loading, error, success, subscribe };
 }
 
 export default useOrdersListener;

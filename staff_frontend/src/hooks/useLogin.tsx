@@ -84,7 +84,7 @@ const useLogin = (): LoginHookResult => {
             setSuccess(true);
             setLoading(false);
             login(token, refreshToken, userDetails)
-            console.log("Successfully logged, tokens & userDetails assigned")
+            console.log(`Successfully logged in\n\t-token: ${token}\n\t-refreshToken: ${refreshToken}\n\t-userDetails: ${userDetails}`)
 
         } catch (error: any) {
             const internalAppCode = error instanceof FetchError

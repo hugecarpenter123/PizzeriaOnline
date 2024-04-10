@@ -1,6 +1,5 @@
 package com.example.Pizzeriabackend.config.JWT.service;
 
-import com.example.Pizzeriabackend.config.JWT.model.AuthenticationResponse;
 import com.example.Pizzeriabackend.config.JWT.model.RefreshTokenRequest;
 import com.example.Pizzeriabackend.config.JWT.model.RefreshTokenResponse;
 import com.example.Pizzeriabackend.entity.RefreshToken;
@@ -18,8 +17,6 @@ import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -48,7 +45,6 @@ public class JwtServiceImp implements JwtService {
     }
 
     private Claims extractAllClaims(String token) {
-        // returns body of a token
         return Jwts
                 .parserBuilder()
                 .setSigningKey(getSignKey())
