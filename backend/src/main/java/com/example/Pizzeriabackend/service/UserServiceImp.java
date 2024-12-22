@@ -116,18 +116,20 @@ public class UserServiceImp implements UserService {
         String email = request.getEmail();
         String password = request.getPassword();
 
+        System.out.println("before authentication");
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
 
         User user = userRepository.findByEmail(email);
         String jwtToken = jwtService.generateToken(user);
 
         RefreshToken refreshToken = jwtService.generateRefreshToken(user);
-
-        return AuthenticationResponse.builder()
+        AuthenticationResponse response = AuthenticationResponse.builder()
                 .token(jwtToken)
                 .refreshToken(refreshToken.getToken())
                 .userDetails(new UserDetailsDTO(user))
                 .build();
+        System.out.println("response:" + response);
+        return response;
     }
 
     @Override

@@ -9,17 +9,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.time.Instant;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-//@AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
-//@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-//@ActiveProfiles("test")
 class RefreshTokenRepositoryTest {
 
     @Autowired
@@ -34,6 +29,7 @@ class RefreshTokenRepositoryTest {
 
     @BeforeEach
     public void setUp() {
+        // Given - Preparing initial data for tests
         user = User.builder()
                 .email("user@gmail.com")
                 .password("password")
@@ -50,29 +46,31 @@ class RefreshTokenRepositoryTest {
         refreshTokenRepository.save(refreshToken);
     }
 
-
     @Test
     @DisplayName("Should find the RefreshToken by token value")
     void findByToken_ShouldReturnToken() {
-        assertNotNull(userRepository.findByEmail("user@gmail.com"));
-        assertNotNull(user.getId());
+        // Given
 
+        // When
         Optional<RefreshToken> retrievedRefreshToken = refreshTokenRepository.findByToken(TOKEN_VALUE);
 
+        // Then
         assertThat(retrievedRefreshToken).isPresent();
         assertThat(retrievedRefreshToken.get().getId()).isEqualTo(refreshToken.getId());
         assertThat(retrievedRefreshToken.get().getUser().getId()).isEqualTo(user.getId());
-
     }
 
     @Test
     @DisplayName("Should delete all refresh tokens assigned to user")
     void deleteAllByUser_ShouldDeleteRefreshTokens() {
+        // Given
         Optional<RefreshToken> savedToken = refreshTokenRepository.findByToken(TOKEN_VALUE);
         assertThat(savedToken).isPresent();
 
+        // When
         refreshTokenRepository.deleteAllByUser(user);
 
+        // Then
         Optional<RefreshToken> deletedToken = refreshTokenRepository.findByToken(TOKEN_VALUE);
         assertThat(deletedToken).isEmpty();
     }

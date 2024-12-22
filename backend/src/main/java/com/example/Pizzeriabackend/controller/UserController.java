@@ -40,6 +40,7 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> getToken(@RequestBody AuthenticationRequest request) {
+        System.out.println("request:" + request);
         return ResponseEntity.ok(userService.loginUser(request));
     }
 

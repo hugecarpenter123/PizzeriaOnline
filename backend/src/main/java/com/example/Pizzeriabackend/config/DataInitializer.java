@@ -225,8 +225,8 @@ public class DataInitializer implements CommandLineRunner {
         userRepository.save(staffMember);
 
         User user = User.builder()
-                .name("Ty")
-                .surname("Lee")
+                .name("Marcin")
+                .surname("Kowalski")
                 .email("user@gmail.com")
                 .password(passwordEncoder.encode("user"))
                 .imageUrl(staticAppInfo.getDefaultUserImgUrl())
