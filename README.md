@@ -12,7 +12,7 @@ Ten projekt to aplikacja mobilno-webowa dla systemu zarządzania zamówieniami w
 ## Uruchomienie projektu
 Aby uruchomić należy:
 1. uruchomić aplikację serwerową z katalogu [./backend](./backend) poleceniem: "mvn spring-boot:run"
-2. uruchomić aplikację mobilną z katalogu [./user_mobile_frontend](./user_mobile_frontend) polecenim: "npx expo start"
+2. uruchomić aplikację mobilną z katalogu [./user_mobile_frontend](./user_mobile_frontend) poleceniem: "npx expo start"
 3. aplikację mobilną uruchomić na emulatorze albo bezpośrednio na urządzeniu za pomocą "expo"
 
 ## Testy
