@@ -1,27 +1,24 @@
 package com.example.Pizzeriabackend.service;
 
-import com.example.Pizzeriabackend.entity.Ingredient;
-import com.example.Pizzeriabackend.model.request.CreateIngredientRequest;
-import com.example.Pizzeriabackend.repository.IngredientRepository;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.runner.RunWith;
-import org.mockito.*;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import com.example.Pizzeriabackend.entity.Ingredient;
+import com.example.Pizzeriabackend.model.request.CreateIngredientRequest;
+import com.example.Pizzeriabackend.repository.IngredientRepository;
 
 @ExtendWith(MockitoExtension.class)
 public class IngredientServiceImpTest {
@@ -33,7 +30,7 @@ public class IngredientServiceImpTest {
     private IngredientRepository ingredientRepository;
 
     @Test
-    public void testCreateIngredient() {
+    public void should_CreateIngredient_WhenValidRequestProvided() {
         CreateIngredientRequest request = new CreateIngredientRequest();
         request.setName("Cheese");
         request.setPrice(5.0);
@@ -52,7 +49,7 @@ public class IngredientServiceImpTest {
     }
 
     @Test
-    public void testGetAllIngredients() {
+    public void should_ReturnAllIngredients_WhenGettingIngredients() {
         List<Ingredient> ingredients = Arrays.asList(
                 new Ingredient(1L, "Cheese", 5.0),
                 new Ingredient(2L, "Tomato", 2.0)
@@ -66,7 +63,7 @@ public class IngredientServiceImpTest {
     }
 
     @Test
-    public void testUpdateIngredient() {
+    public void should_UpdateIngredient_WhenValidIdAndRequestProvided() {
         long ingredientId = 1L;
         CreateIngredientRequest request = new CreateIngredientRequest();
         request.setName("Mushrooms");
@@ -76,21 +73,19 @@ public class IngredientServiceImpTest {
         Ingredient existingIngredient = new Ingredient(ingredientId, "Cheese", 5.0);
         Ingredient updatedIngredient = new Ingredient(ingredientId, "Mushrooms", 3.0);
 
-//        ArgumentCaptor<Ingredient> argumentCaptor = ArgumentCaptor.forClass(Ingredient.class);
-
+        when(ingredientRepository.findById(ingredientId)).thenReturn(Optional.of(existingIngredient));
         when(ingredientRepository.findById(ingredientId)).thenReturn(Optional.of(existingIngredient));
         when(ingredientRepository.save(any(Ingredient.class))).thenReturn(updatedIngredient);
 
         Ingredient result = ingredientService.updateIngredient(ingredientId, request);
 
-//        verify(ingredientRepository).save(argumentCaptor.capture());
         verify(ingredientRepository).save(any());
         assertThat(result).isEqualTo(updatedIngredient);
 
     }
 
     @Test
-    public void testDeleteIngredient() {
+    public void should_DeleteIngredient_WhenValidIdProvided() {
         long ingredientId = 1L;
         ingredientService.deleteIngredient(ingredientId);
 

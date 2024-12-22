@@ -1,38 +1,29 @@
-package com.example.Pizzeriabackend.controller;
+package com.example.Pizzeriabackend.controller.unit;
 
-import com.example.Pizzeriabackend.config.JWT.service.JwtService;
-import com.example.Pizzeriabackend.entity.Drink;
-import com.example.Pizzeriabackend.model.response.DrinkDTO;
-import com.example.Pizzeriabackend.service.DrinksService;
-import jakarta.servlet.http.Part;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+
+import com.example.Pizzeriabackend.controller.DrinkController;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.mock.web.MockPart;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.test.context.TestSecurityContextHolder;
-import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
+import com.example.Pizzeriabackend.config.JWT.service.JwtService;
+import com.example.Pizzeriabackend.entity.Drink;
+import com.example.Pizzeriabackend.model.response.DrinkDTO;
+import com.example.Pizzeriabackend.service.DrinksService;
 
 
 //@SpringBootTest
@@ -78,7 +69,7 @@ class DrinkControllerTest {
 
     @Test
     @WithMockUser(roles = "USER")
-    void getAllDrinks() throws Exception {
+    void should_ReturnAllDrinks_WhenGettingDrinks() throws Exception {
         Mockito.when(drinksService.getAllDrinks()).thenReturn(drinkDTOList);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/drink"))
@@ -92,7 +83,7 @@ class DrinkControllerTest {
 
     @Test
     @WithMockUser(roles = "USER")
-    void getDrink() throws Exception {
+    void should_ReturnDrink_WhenGettingDrinkById() throws Exception {
         Mockito.when(drinksService.getDrink(2)).thenReturn(drinkList.get(1));
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/drink/{id}", 2L))
@@ -104,7 +95,7 @@ class DrinkControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void createDrink() throws Exception {
+    void should_CreateDrink_WhenValidDataProvided() throws Exception {
         Drink drink = Drink.builder()
                 .id(3L)
                 .name("Test Drink")
@@ -140,7 +131,7 @@ class DrinkControllerTest {
 
     @Test
     @WithMockUser(username = "username", roles = "ADMIN")
-    void deleteDrink() throws Exception {
+    void should_DeleteDrink_WhenValidIdProvided() throws Exception {
         Mockito.doNothing().when(drinksService).deleteDrink(Mockito.anyLong());
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/drink/{id}", 1L))
                 .andExpect(MockMvcResultMatchers.status().isNoContent());
@@ -150,7 +141,7 @@ class DrinkControllerTest {
 
     @Test
     @WithMockUser(username = "username", roles = "ADMIN")
-    void deleteAllDrinks() throws Exception {
+    void should_DeleteAllDrinks_WhenDeletingDrinks() throws Exception {
         Mockito.doNothing().when(drinksService).deleteAllDrinks();
 
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/drink"))

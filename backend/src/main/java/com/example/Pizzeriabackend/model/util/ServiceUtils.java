@@ -33,7 +33,10 @@ public class ServiceUtils {
     }
 
     public boolean hasUserPerms() {
+        System.out.println("has user perms check");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("has ?" + authentication.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals(Role.USER.name())));
         return authentication.getAuthorities().stream()
                 .anyMatch(auth -> auth.getAuthority().equals(Role.USER.name()));
     }

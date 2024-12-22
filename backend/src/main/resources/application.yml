@@ -1,7 +1,7 @@
 server:
   port: 8082
+#  address: 192.168.209.70
   address: 192.168.1.39
-#  address: 192.168.127.70
 
 image-upload-folder: ${IMAGE_UPLOAD_FOLDER:D:\Users\user\loose_projects\spring\image-upload-folder}
 

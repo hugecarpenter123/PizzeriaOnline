@@ -1,8 +1,9 @@
-package com.example.Pizzeriabackend.controller;
+package com.example.Pizzeriabackend.controller.unit;
 
-import com.example.Pizzeriabackend.config.JWT.service.JwtService;
-import com.example.Pizzeriabackend.service.ImageService;
-import org.junit.jupiter.api.DisplayName;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.example.Pizzeriabackend.controller.ImageController;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -15,10 +16,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import static org.mockito.Mockito.when;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.example.Pizzeriabackend.config.JWT.service.JwtService;
+import com.example.Pizzeriabackend.service.ImageService;
 
 @WebMvcTest(controllers = ImageController.class)
 class ImageControllerTest {
@@ -33,9 +32,8 @@ class ImageControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    @DisplayName("should return an image with status 200 and correct content type")
     @WithMockUser(username = "username", roles = "USER")
-    void getImage() throws Exception {
+    void should_ReturnImageWithStatus200AndCorrectContentType_WhenGettingImage() throws Exception {
         String folderName = "user";
         String imageName = "user_default.png";
 

@@ -1,22 +1,16 @@
 package com.example.Pizzeriabackend.service;
 
-import com.example.Pizzeriabackend.config.JWT.model.AuthenticationRequest;
-import com.example.Pizzeriabackend.config.JWT.model.AuthenticationResponse;
-import com.example.Pizzeriabackend.config.JWT.service.JwtService;
-import com.example.Pizzeriabackend.entity.Order;
-import com.example.Pizzeriabackend.entity.RefreshToken;
-import com.example.Pizzeriabackend.entity.Review;
-import com.example.Pizzeriabackend.entity.User;
-import com.example.Pizzeriabackend.entity.enums.Role;
-import com.example.Pizzeriabackend.model.request.CreateSuperuserRequest;
-import com.example.Pizzeriabackend.model.response.OrderDTO;
-import com.example.Pizzeriabackend.model.response.UserDetailsDTO;
-import com.example.Pizzeriabackend.repository.PizzaRepository;
-import com.example.Pizzeriabackend.repository.RefreshTokenRepository;
-import com.example.Pizzeriabackend.repository.ReviewRepository;
-import com.example.Pizzeriabackend.repository.UserRepository;
-import com.example.Pizzeriabackend.model.util.ServiceUtils;
-import com.example.Pizzeriabackend.model.util.StaticAppInfo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,12 +25,22 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import com.example.Pizzeriabackend.config.JWT.model.AuthenticationRequest;
+import com.example.Pizzeriabackend.config.JWT.model.AuthenticationResponse;
+import com.example.Pizzeriabackend.config.JWT.service.JwtService;
+import com.example.Pizzeriabackend.entity.Order;
+import com.example.Pizzeriabackend.entity.RefreshToken;
+import com.example.Pizzeriabackend.entity.User;
+import com.example.Pizzeriabackend.entity.enums.Role;
+import com.example.Pizzeriabackend.model.request.CreateSuperuserRequest;
+import com.example.Pizzeriabackend.model.response.OrderDTO;
+import com.example.Pizzeriabackend.model.response.UserDetailsDTO;
+import com.example.Pizzeriabackend.model.util.ServiceUtils;
+import com.example.Pizzeriabackend.model.util.StaticAppInfo;
+import com.example.Pizzeriabackend.repository.PizzaRepository;
+import com.example.Pizzeriabackend.repository.RefreshTokenRepository;
+import com.example.Pizzeriabackend.repository.ReviewRepository;
+import com.example.Pizzeriabackend.repository.UserRepository;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -70,7 +74,6 @@ class UserServiceTest {
     private UserServiceImp userService;
 
     private User mockedUser;
-    private List<Review> mockedUserReviews;
     private List<Order> mockedUserOrders;
 
     @BeforeEach
@@ -79,13 +82,6 @@ class UserServiceTest {
                 .id(1L)
                 .email("mockedUser@example.com")
                 .build();
-
-//        mockedUserReviews = List.of(
-//                Review.builder()
-//                        .id(1L)
-//                        .user(mockedUser)
-//                        .build());
-//        mockedUser.setReviews(mockedUserReviews);
 
         mockedUserOrders = List.of(
                 Order.builder()
@@ -101,12 +97,12 @@ class UserServiceTest {
     }
 
     @Test
-    void registerUser() {
+    void should_RegisterUser_WhenValidDataProvided() {
 
     }
 
     @Test
-    void createSuperUser() {
+    void should_CreateSuperUser_WhenValidRequestProvided() {
         CreateSuperuserRequest mockRequest = new CreateSuperuserRequest();
         mockRequest.setEmail("admin@example.com");
         mockRequest.setName("Admin");
@@ -119,7 +115,7 @@ class UserServiceTest {
     }
 
     @Test
-    void loginUser() {
+    void should_ReturnAuthenticationResponse_WhenLoginSuccessful() {
         String userEmail = "test@example.com";
         String userPassword = "password123";
         String encodedPassword = "encodedPassword";
@@ -163,7 +159,7 @@ class UserServiceTest {
     }
 
     @Test
-    void getMyDetails() {
+    void should_ReturnUserDetails_WhenGettingMyDetails() {
         when(serviceUtils.getLoggedUser()).thenReturn(mockedUser);
         UserDetailsDTO response = userService.getMyDetails();
 
@@ -172,30 +168,34 @@ class UserServiceTest {
     }
 
     @Test
-    void getUserOrders() {
+    void should_ReturnOrdersList_WhenGettingUserOrders() {
         when(userRepository.findById(mockedUser.getId())).thenReturn(Optional.ofNullable(mockedUser));
+
         List<OrderDTO> orderDtoList = userService.getUserOrders(mockedUser.getId());
 
         assertNotNull(orderDtoList);
-        assertEquals(orderDtoList.size(), 1);
-        assertEquals(orderDtoList.get(0).getOrderId(), mockedUserOrders.get(0).getId());
+        assertEquals(1, orderDtoList.size());
+        assertEquals(mockedUserOrders.get(0).getId(), orderDtoList.get(0).getOrderId());
     }
 
     @Test
-    void deleteUser() {
+    void should_DeleteUserAndRelatedData_WhenDeletingUser() {
+        // given
         when(serviceUtils.getLoggedUser()).thenReturn(mockedUser);
 
+        // when
         userService.deleteUser();
 
+        // then
         verify(refreshTokenRepository).deleteAllByUser(mockedUser);
         verify(userRepository).delete(mockedUser);
     }
 
     @Test
-    void saveUserImage() {
+    void should_SaveUserImage_WhenValidImageProvided() {
+        // given
         String userEmail = "test@example.com";
         Long userId = 1L;
-
         User mockUser = User.builder()
                 .id(userId)
                 .email(userEmail)
@@ -212,12 +212,10 @@ class UserServiceTest {
         when(imageService.saveImage(any(MultipartFile.class), any(StaticAppInfo.IMAGE_FOLDER.class), any(String.class)))
                 .thenReturn("http://localhost:8080/images/user/user_1.png");
 
+        // when
         userService.saveUserImage(mockMultipartFile);
 
+        // then
         verify(userRepository).save(mockUser);
-    }
-
-    @Test
-    void updateUser() {
     }
 }

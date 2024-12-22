@@ -27,7 +27,7 @@ public class IngredientController {
     @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping
     public ResponseEntity<Map<String, Ingredient>> createIngredient(@RequestBody CreateIngredientRequest ingredientModel) {
-        return ResponseEntity.ok().body(Map.of("result", ingredientService.createIngredient(ingredientModel)));
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("result", ingredientService.createIngredient(ingredientModel)));
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
