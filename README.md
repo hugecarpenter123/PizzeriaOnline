@@ -83,7 +83,11 @@ W projekcie zaimplementowano testy integracyjne dla kluczowych komponentów back
   - **Pobieranie pizzy po ID:**  
     Test sprawdza, czy można poprawnie pobrać szczegóły pizzy na podstawie jej ID, w tym jej składniki.
     
-### Przypadki testowe dla testera manualnego (test cases)
+## Dokumentacja API
+- Dostępna w pliku  [backend/src/test/resources/api-docs.json](./backend/src/test/resources/api-docs.json)
+- Dostępna po uruchomieni aplikacji pod adresem http://hostname:port/swagger-ui/index.html
+    
+## Przypadki testowe dla testera manualnego (test cases)
 - **TC0001**: Walidacja pól logowania
 - **TC0002**: Walidacja pola “Imię” w ekranie Rejestracji
 - **TC0003**: Walidacja pola “email” w ekranie Rejestracji
@@ -95,7 +99,18 @@ W projekcie zaimplementowano testy integracyjne dla kluczowych komponentów back
 - **TC0009**: Zmniejszenie ilości pozycji w koszyku
 - **TC0010**: Usunięcie wszystkich pozycji z koszyka
 
-Lokalizacja pliku z tabelką: [Przypadki testowe](./backend/src/test/resources/test-cases.docx)  
+Lokalizacja pliku z tabelką: [Przypadki testowe](./backend/src/test/resources/test-cases.docx) 
+
+## Technologie użyte w projekcie
+- JavaScript (TypeScript)
+- ReactNative
+- Java
+- Spring Boot + JPA
+- PostgreSQL
+
+### Zrzut ekranu po wykonaniu komendy "**mvn test**"
+<img src="https://github.com/user-attachments/assets/f5a7d44a-ab37-4efd-b245-46da6c1b3926" alt="wynik testów" width="800" />
+
 
 ## Przykładowe działanie aplikacji
 <a href="https://drive.google.com/file/d/184CwsExBseBtXPaFgk1bBUcYAZ9qLGQ-/view?usp=sharing"><img src="http://img.youtube.com/vi/wkhmERX4cZU/0.jpg" 
