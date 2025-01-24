@@ -36,7 +36,7 @@ const PizzaItem = ({ pizza, addToCart, navigation }: Props) => {
             <View style={styles.pizzaPricesContainer}>
               {pizzaPrices.map((price, index) => (
                 <View style={styles.singleSizeWrapper} key={index}>
-                  <Text style={styles.priceCaption}>{`${price}zł`}</Text>
+                  <Text style={styles.priceCaption}>{`${Number.isInteger(price) ? price : price.toFixed(2)}zł`}</Text>
                   <TouchableOpacity
                     key={`${price}-${index}`}
                     style={[styles.sizeButton, index === selectedPriceIndex ? styles.pizzaSizeSelected : null]}

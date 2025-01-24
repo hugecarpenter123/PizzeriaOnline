@@ -11,6 +11,14 @@ const nextConfig = {
         destination: 'http://192.168.1.39:8082/api/:path*'
       }
     ]
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: "**"
+      }
+    ]
   }
 }
 

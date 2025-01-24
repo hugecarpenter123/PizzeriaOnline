@@ -98,7 +98,6 @@ public class IngredientControllerIntegrationTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.result.name").value("Cheese"));
 
-        // Verify that the ingredient was saved in the database
         Ingredient savedIngredient = ingredientRepository.findAll().get(0);
         assert savedIngredient.getName().equals("Cheese");
     }

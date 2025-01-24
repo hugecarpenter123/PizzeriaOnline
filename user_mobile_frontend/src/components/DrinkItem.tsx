@@ -23,11 +23,11 @@ const DrinkItem = ({ drink, onAddToOrderClick }: Props) => {
     },
     {
       size: 500,
-      price: drink.smallSizePrice
+      price: drink.mediumSizePrice
     },
     {
       size: 1000,
-      price: drink.smallSizePrice
+      price: drink.bigSizePrice
     }
   ]
 
@@ -35,7 +35,7 @@ const DrinkItem = ({ drink, onAddToOrderClick }: Props) => {
     return (
       drinkSizePrices.map(({ size, price }, index) => (
         <View style={styles.singleSizeWrapper} key={index}>
-          <Text style={styles.priceCaption}>{`${price}zł`}</Text>
+          <Text style={styles.priceCaption}>{`${Number.isInteger(price) ? price : price.toFixed(2)}zł`}</Text>
           <TouchableOpacity
             key={size}
             style={[styles.sizeButton, index === selected ? styles.drinkSizeSelected : null]}
